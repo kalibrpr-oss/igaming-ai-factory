@@ -47,6 +47,8 @@ export interface OrderQuotePreviewPayload {
 
 export interface OrderQuoteResponse {
   target_word_count: number;
+  price_base_cents: number;
+  discount_cents: number;
   price_cents: number;
   currency: string;
 }
@@ -56,10 +58,12 @@ export type OrderStatus =
   | "pending_payment"
   | "paid"
   | "generating"
+  | "review_required"
   | "completed"
   | "failed"
   | "cancelled";
 
+/** Ответ API заказа (синхрон с backend OrderResponse). */
 export interface OrderDto {
   id: number;
   status: OrderStatus;
@@ -69,9 +73,24 @@ export interface OrderDto {
   lsi_keywords: string[];
   seo_config: Record<string, unknown>;
   target_word_count: number;
+  price_base_cents: number;
+  discount_cents: number;
   price_cents: number;
   brand_voice_id: string;
+  generated_text: string | null;
   generated_asset_uri: string | null;
+  moderated_at?: string | null;
+  moderated_by_user_id?: number | null;
+  moderation_notes?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface OrderPayResponse {
+  order: OrderDto;
+  user_balance_cents: number;
+}
+
+export interface OrderGenerateResponse {
+  order: OrderDto;
 }

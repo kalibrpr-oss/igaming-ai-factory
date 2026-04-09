@@ -1,11 +1,37 @@
 "use client";
 
-import { createOrder, fetchBrandVoices, previewOrderPrice } from "@/api/endpoints";
+import {
+  createOrder,
+  fetchBrandVoices,
+  fetchMe,
+  generateOrderText,
+  payOrderFromBalance,
+  previewOrderPrice,
+} from "@/api/endpoints";
 import { Button } from "@/components/ui/Button";
 import { buildOrderPayload, type SeoForm } from "@/lib/order-schema";
 import { cn } from "@/lib/cn";
-import type { BrandVoiceMeta, OrderQuoteResponse } from "@/types";
+import type { BrandVoiceMeta, OrderDto, OrderQuoteResponse } from "@/types";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+
+function formatRub(cents: number): string {
+  return (cents / 100).toLocaleString("ru-RU", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
+const statusAfterCreateRu: Record<OrderDto["status"], string> = {
+  draft: "Черновик",
+  pending_payment: "Ждёт оплаты с баланса",
+  paid: "Оплачен — можно запустить генерацию",
+  generating: "Идёт генерация…",
+  review_required: "Текст сгенерирован, ждёт модерации",
+  completed: "Готово",
+  failed: "Ошибка генерации",
+  cancelled: "Отменён",
+};
 
 const defaultSeo: SeoForm = {
   language: "ru",
@@ -32,6 +58,20 @@ export function OrderForm() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [activeOrder, setActiveOrder] = useState<OrderDto | null>(null);
+  const [balanceCents, setBalanceCents] = useState<number | null>(null);
+  const [payLoading, setPayLoading] = useState(false);
+  const [genLoading, setGenLoading] = useState(false);
+  const [actionErr, setActionErr] = useState<string | null>(null);
+
+  const refreshBalance = useCallback(async () => {
+    try {
+      const me = await fetchMe();
+      setBalanceCents(me.balance_cents ?? 0);
+    } catch {
+      setBalanceCents(null);
+    }
+  }, []);
 
   useEffect(() => {
     fetchBrandVoices()
@@ -44,7 +84,8 @@ export function OrderForm() {
         }
       })
       .catch(() => setErr("Не удалось загрузить голоса — проверь API."));
-  }, []);
+    void refreshBalance();
+  }, [refreshBalance]);
 
   const refreshQuote = useCallback(async () => {
     try {
@@ -86,11 +127,52 @@ export function OrderForm() {
     setLoading(true);
     try {
       const order = await createOrder(built.payload);
-      setMsg(`Заказ #${order.id} создан. Статус: ${order.status} — дальше подключим оплату.`);
+      setActiveOrder(order);
+      setActionErr(null);
+      setMsg(null);
+      await refreshBalance();
     } catch (er) {
       setErr(er instanceof Error ? er.message : "Ошибка создания заказа");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function onPayFromBalance() {
+    if (!activeOrder) return;
+    setActionErr(null);
+    setPayLoading(true);
+    try {
+      const res = await payOrderFromBalance(activeOrder.id);
+      setActiveOrder(res.order);
+      setBalanceCents(res.user_balance_cents);
+    } catch (er) {
+      const m = er instanceof Error ? er.message : "Не удалось оплатить";
+      setActionErr(
+        m.includes("Недостаточно")
+          ? "На балансе не хватает средств. Пополнение подключим на этапе оплаты."
+          : m
+      );
+    } finally {
+      setPayLoading(false);
+    }
+  }
+
+  async function onGenerate() {
+    if (!activeOrder) return;
+    setActionErr(null);
+    setGenLoading(true);
+    try {
+      const res = await generateOrderText(activeOrder.id);
+      setActiveOrder(res.order);
+    } catch (er) {
+      setActionErr(
+        er instanceof Error
+          ? er.message
+          : "Ошибка генерации. Попробуйте позже или напишите в поддержку."
+      );
+    } finally {
+      setGenLoading(false);
     }
   }
 
@@ -325,6 +407,92 @@ export function OrderForm() {
       >
         {loading ? "Отправка…" : "Создать заказ"}
       </Button>
+
+      {activeOrder && (
+        <div className="glass-panel space-y-5 p-8 sm:p-10">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-xl font-semibold text-white">
+              Заказ #{activeOrder.id}
+            </h2>
+            <button
+              type="button"
+              className="text-sm text-zinc-500 underline decoration-white/20 underline-offset-4 hover:text-zinc-300"
+              onClick={() => {
+                setActiveOrder(null);
+                setActionErr(null);
+              }}
+            >
+              Скрыть и создать другой
+            </button>
+          </div>
+          <p className="text-base text-zinc-400">
+            {statusAfterCreateRu[activeOrder.status]}
+          </p>
+          <div className="grid gap-3 text-base text-zinc-300 sm:grid-cols-2">
+            <p>
+              К оплате:{" "}
+              <strong className="text-white">
+                {formatRub(activeOrder.price_cents)} ₽
+              </strong>
+              {activeOrder.discount_cents > 0 && (
+                <span className="ml-2 text-sm text-emerald-400/90">
+                  (скидка {formatRub(activeOrder.discount_cents)} ₽)
+                </span>
+              )}
+            </p>
+            <p>
+              Баланс:{" "}
+              <strong className="text-white">
+                {balanceCents === null ? "…" : `${formatRub(balanceCents)} ₽`}
+              </strong>
+            </p>
+          </div>
+          {actionErr && (
+            <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-4 text-base text-red-200">
+              {actionErr}
+            </p>
+          )}
+          {activeOrder.status === "pending_payment" && (
+            <Button
+              type="button"
+              className="w-full sm:w-auto"
+              disabled={payLoading}
+              onClick={() => void onPayFromBalance()}
+            >
+              {payLoading ? "Списываем…" : "Оплатить с баланса"}
+            </Button>
+          )}
+          {activeOrder.status === "paid" && (
+            <div className="space-y-3">
+              <p className="text-sm text-zinc-500">
+                Генерация может занять несколько минут — не закрывай вкладку.
+              </p>
+              <Button
+                type="button"
+                className="w-full sm:w-auto"
+                disabled={genLoading}
+                onClick={() => void onGenerate()}
+              >
+                {genLoading ? "Генерируем…" : "Запустить генерацию"}
+              </Button>
+            </div>
+          )}
+          {activeOrder.status === "review_required" && (
+            <p className="text-base text-emerald-200/90">
+              Текст отправлен на модерацию. Статус можно смотреть в{" "}
+              <Link href="/dashboard" className="text-gem-bright hover:underline">
+                кабинете
+              </Link>
+              .
+            </p>
+          )}
+          {activeOrder.status === "failed" && (
+            <p className="text-base text-red-300/90">
+              Генерация не удалась. Попробуйте снова позже или обратитесь в поддержку.
+            </p>
+          )}
+        </div>
+      )}
     </form>
   );
 }

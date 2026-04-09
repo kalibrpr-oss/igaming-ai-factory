@@ -5,6 +5,8 @@ export type {
   HeadingFormat,
   OrderCreatePayload,
   OrderDto,
+  OrderGenerateResponse,
+  OrderPayResponse,
   OrderQuotePreviewPayload,
   OrderQuoteResponse,
   OrderStatus,

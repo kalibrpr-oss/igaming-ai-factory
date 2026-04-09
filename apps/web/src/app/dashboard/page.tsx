@@ -14,6 +14,7 @@ const statusRu: Record<OrderStatus, string> = {
   pending_payment: "Ждёт оплаты",
   paid: "Оплачен",
   generating: "Генерация",
+  review_required: "На модерации",
   completed: "Готов",
   failed: "Ошибка",
   cancelled: "Отменён",

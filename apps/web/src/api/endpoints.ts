@@ -3,6 +3,8 @@ import type {
   BrandVoiceMeta,
   OrderCreatePayload,
   OrderDto,
+  OrderGenerateResponse,
+  OrderPayResponse,
   OrderQuotePreviewPayload,
   OrderQuoteResponse,
   RegisterResponse,
@@ -76,6 +78,24 @@ export async function createOrder(
 
 export async function fetchOrders(): Promise<OrderDto[]> {
   return apiGet<OrderDto[]>(`${V}/orders`);
+}
+
+export async function payOrderFromBalance(
+  orderId: number
+): Promise<OrderPayResponse> {
+  return apiPostJson<OrderPayResponse, Record<string, never>>(
+    `${V}/orders/${orderId}/pay`,
+    {}
+  );
+}
+
+export async function generateOrderText(
+  orderId: number
+): Promise<OrderGenerateResponse> {
+  return apiPostJson<OrderGenerateResponse, Record<string, never>>(
+    `${V}/orders/${orderId}/generate`,
+    {}
+  );
 }
 
 export async function demoRewrite(body: {
