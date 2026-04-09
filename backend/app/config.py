@@ -6,12 +6,19 @@ from dotenv import dotenv_values, load_dotenv
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Только этот файл .env (не родительский репозиторий, не .env.example).
-_ABSOLUTE_ENV = Path(r"C:\Users\user\Desktop\iGaming Project\backend\.env")
-_FALLBACK_ENV = Path(__file__).resolve().parent.parent / ".env"
-_ENV_FILE = _ABSOLUTE_ENV if _ABSOLUTE_ENV.is_file() else _FALLBACK_ENV
+# Файл .env рядом с папкой app (каталог backend). Переопределение: CONVEER_DOTENV_PATH
+# (абсолютный путь или относительно backend/), без хардкода машины — CI/Docker/команда.
+_BACKEND_ROOT = Path(__file__).resolve().parent.parent
+_dotenv_override = (os.environ.get("CONVEER_DOTENV_PATH") or "").strip().strip('"').strip(
+    "'"
+)
+if _dotenv_override:
+    _p = Path(_dotenv_override)
+    _ENV_FILE = (_p if _p.is_absolute() else _BACKEND_ROOT / _p).resolve()
+else:
+    _ENV_FILE = (_BACKEND_ROOT / ".env").resolve()
 # Для alembic / ручной проверки: какой файл .env реально использован
-RESOLVED_DOTENV_PATH = str(_ENV_FILE.resolve())
+RESOLVED_DOTENV_PATH = str(_ENV_FILE)
 
 # Снимок до загрузки (источник «старого» значения — обычно Windows User/System env)
 _database_url_before = os.environ.get("DATABASE_URL")
@@ -46,8 +53,8 @@ def _log_env_resolution() -> None:
     )
     print(
         "[conveer-config] "
-        f"env_path={_ENV_FILE.resolve()} exists={_ENV_FILE.is_file()} "
-        f"used_absolute_primary={_ABSOLUTE_ENV.is_file()} "
+        f"env_path={_ENV_FILE} exists={_ENV_FILE.is_file()} "
+        f"dotenv_override_env_var={bool(_dotenv_override)} "
         f"raw_DATABASE_URL_len_file={len(_raw_database_url_from_file)} "
         f"os_DATABASE_URL_len_before={len(_database_url_before or '')} "
         f"os_DATABASE_URL_len_after={len(after)} "
