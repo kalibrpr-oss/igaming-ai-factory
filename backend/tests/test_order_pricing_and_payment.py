@@ -1,0 +1,39 @@
+from datetime import datetime, timedelta, timezone
+
+from app.models.user import User
+from app.services.orders.payment import ledger_idempotency_key_for_order
+from app.services.pricing import calculate_order_price
+
+
+def test_calculate_order_price_without_bonus() -> None:
+    user = User(
+        email="u@example.com",
+        username="u1",
+        hashed_password="x",
+        first_order_bonus_expires_at=None,
+        first_order_bonus_consumed_at=None,
+    )
+    result = calculate_order_price(user, 1000)
+    assert result.price_base_cents == 70000
+    assert result.discount_cents == 0
+    assert result.price_cents == 70000
+    assert result.bonus_applied is False
+
+
+def test_calculate_order_price_with_bonus() -> None:
+    user = User(
+        email="u2@example.com",
+        username="u2",
+        hashed_password="x",
+        first_order_bonus_expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        first_order_bonus_consumed_at=None,
+    )
+    result = calculate_order_price(user, 1000)
+    assert result.price_base_cents == 70000
+    assert result.discount_cents == 21000
+    assert result.price_cents == 49000
+    assert result.bonus_applied is True
+
+
+def test_order_debit_idempotency_key() -> None:
+    assert ledger_idempotency_key_for_order(42) == "order_debit:42"
