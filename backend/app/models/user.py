@@ -33,6 +33,8 @@ class User(Base):
     referral_code: Mapped[str | None] = mapped_column(
         String(32), unique=True, nullable=True, index=True
     )
+    # Один раз сменить slug в ЛК; после True — кастом зафиксирован.
+    referral_slug_locked: Mapped[bool] = mapped_column(default=False)
     referrer_user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
@@ -47,6 +49,11 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
+    last_seen_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    last_user_agent: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     orders: Mapped[list["Order"]] = relationship(
         "Order",

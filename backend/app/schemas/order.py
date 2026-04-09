@@ -53,6 +53,7 @@ class OrderQuoteResponse(BaseModel):
     discount_cents: int
     price_cents: int
     currency: str = "RUB"
+    first_order_bonus_applied: bool = False
 
 
 class OrderPayResponse(BaseModel):

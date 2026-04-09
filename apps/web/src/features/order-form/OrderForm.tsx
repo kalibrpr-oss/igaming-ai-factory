@@ -270,11 +270,31 @@ export function OrderForm() {
           </div>
         </div>
         {quote && (
-          <p className="mt-8 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-base text-emerald-200/90">
-            Ориентир цены:{" "}
-            <strong>{(quote.price_cents / 100).toLocaleString("ru-RU")} ₽</strong> за{" "}
-            {quote.target_word_count} слов ({quote.currency})
-          </p>
+          <div className="mt-8 space-y-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-base text-emerald-200/90">
+            {quote.discount_cents > 0 ? (
+              <>
+                <p className="text-sm text-emerald-100/80">
+                  База:{" "}
+                  <span className="line-through opacity-80">
+                    {formatRub(quote.price_base_cents)} ₽
+                  </span>
+                  {" · "}
+                  Скидка на первый заказ: −{formatRub(quote.discount_cents)} ₽
+                </p>
+                <p>
+                  К оплате:{" "}
+                  <strong>{formatRub(quote.price_cents)} ₽</strong> за{" "}
+                  {quote.target_word_count} слов ({quote.currency})
+                </p>
+              </>
+            ) : (
+              <p>
+                Ориентир цены:{" "}
+                <strong>{formatRub(quote.price_cents)} ₽</strong> за{" "}
+                {quote.target_word_count} слов ({quote.currency})
+              </p>
+            )}
+          </div>
         )}
       </div>
 

@@ -11,6 +11,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from yookassa.domain.exceptions.unauthorized_error import UnauthorizedError
 
 from app.config import settings
 from app.db.session import get_session
@@ -84,6 +85,16 @@ async def yookassa_create_topup(
             internal_payment_id=payment.id,
             user_id=user.id,
         )
+    except UnauthorizedError:
+        logger.warning("ЮKassa: неверные shopId / secret_key")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=(
+                "ЮKassa отклонила ключи: проверь YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY "
+                "в backend/.env (один магазин = одна пара; тестовый секрет только к тестовому shopId). "
+                "Перевыпусти секрет в кабинете и перезапусти сервер."
+            ),
+        ) from None
     except Exception as exc:
         logger.exception("ЮKassa: не удалось создать платёж")
         raise HTTPException(

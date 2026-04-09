@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_session
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_user_optional
 from app.models.enums import OrderStatus
 from app.models.order import Order
 from app.models.user import User
@@ -33,18 +33,31 @@ def _to_client_order_response(order: Order) -> OrderResponse:
 
 
 @router.post("/preview-price", response_model=OrderQuoteResponse)
-async def preview_price(body: OrderQuotePreview) -> OrderQuoteResponse:
-    """Пересчёт цены по счётчику слов и пресету (без полного ТЗ)."""
+async def preview_price(
+    body: OrderQuotePreview,
+    user: User | None = Depends(get_current_user_optional),
+) -> OrderQuoteResponse:
+    """Пересчёт цены по счётчику слов и пресету; со входом — учёт скидки 30% на первый заказ."""
     try:
         get_voice(body.brand_voice_id)
     except KeyError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+    if user is not None:
+        bd = calculate_order_price(user, body.target_word_count)
+        return OrderQuoteResponse(
+            target_word_count=body.target_word_count,
+            price_base_cents=bd.price_base_cents,
+            discount_cents=bd.discount_cents,
+            price_cents=bd.price_cents,
+            first_order_bonus_applied=bd.bonus_applied,
+        )
     price = quote_price_cents(body.target_word_count)
     return OrderQuoteResponse(
         target_word_count=body.target_word_count,
         price_base_cents=price,
         discount_cents=0,
         price_cents=price,
+        first_order_bonus_applied=False,
     )
 
 

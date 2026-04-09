@@ -65,6 +65,7 @@ async def _create_user(
     username: str,
     password: str,
     is_email_verified: bool = False,
+    referral_code: str | None = None,
 ) -> User:
     async with session_maker() as session:
         user = User(
@@ -73,6 +74,8 @@ async def _create_user(
             hashed_password=hash_password(password),
             is_email_verified=is_email_verified,
             balance_cents=0,
+            referral_code=referral_code,
+            referral_slug_locked=False,
         )
         session.add(user)
         await session.commit()
@@ -541,3 +544,41 @@ async def _set_latest_token_created_at(
         token = result.scalar_one()
         token.created_at = created_at
         await session.commit()
+
+
+def test_register_with_referral_code_sets_referrer(
+    client: TestClient,
+    session_maker: async_sessionmaker[AsyncSession],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def _ok_send(*_args, **_kwargs) -> None:
+        return None
+
+    monkeypatch.setattr(mail_tasks, "send_verification_email_task", _ok_send)
+
+    inv = _run(
+        _create_user(
+            session_maker,
+            email="inviter@example.com",
+            username="inviter42",
+            password="Password123!",
+            is_email_verified=True,
+            referral_code="myinvite01",
+        )
+    )
+
+    resp = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "refchild@example.com",
+            "username": "refchild99",
+            "password": "Password123!",
+            "referral_code": "myinvite01",
+        },
+    )
+    assert resp.status_code == 200
+    child = _run(_fetch_user_by_email(session_maker, "refchild@example.com"))
+    assert child is not None
+    assert child.referrer_user_id == inv.id
+    assert child.referral_code is not None
+    assert len(child.referral_code) >= 8

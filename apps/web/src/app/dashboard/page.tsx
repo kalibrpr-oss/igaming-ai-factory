@@ -4,6 +4,7 @@ import { fetchMe, fetchOrders } from "@/api/endpoints";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { Button } from "@/components/ui/Button";
 import { WalletDevTopup } from "@/components/wallet/WalletDevTopup";
+import { ReferralProgramCard } from "@/components/referral/ReferralProgramCard";
 import { WalletYooKassaCard } from "@/components/wallet/WalletYooKassaCard";
 import { clearToken } from "@/lib/auth-storage";
 import type { OrderDto, OrderStatus } from "@/types";
@@ -27,6 +28,7 @@ function DashboardInner() {
   const [orders, setOrders] = useState<OrderDto[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [balanceCents, setBalanceCents] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [topupHint, setTopupHint] = useState(false);
 
   const load = useCallback(() => {
@@ -37,8 +39,14 @@ function DashboardInner() {
 
   const loadBalance = useCallback(() => {
     fetchMe()
-      .then((me) => setBalanceCents(me.balance_cents ?? 0))
-      .catch(() => setBalanceCents(null));
+      .then((me) => {
+        setBalanceCents(me.balance_cents ?? 0);
+        setIsAdmin(me.is_admin);
+      })
+      .catch(() => {
+        setBalanceCents(null);
+        setIsAdmin(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -63,25 +71,32 @@ function DashboardInner() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16 md:py-20">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
             Кабинет
           </h1>
           <p className="mt-2 text-base text-zinc-500 md:text-lg">
             История заказов и статусы
-            {balanceCents !== null && (
-              <span className="mt-1 block text-sm text-zinc-400">
-                Баланс:{" "}
-                <span className="font-medium text-emerald-200/90">
-                  {(balanceCents / 100).toLocaleString("ru-RU")} ₽
-                </span>
-              </span>
-            )}
           </p>
+          <div className="mt-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4 md:px-6 md:py-5">
+            <p className="text-sm font-medium uppercase tracking-wider text-zinc-500">
+              Баланс
+            </p>
+            <p className="mt-1 text-4xl font-semibold tabular-nums tracking-tight text-emerald-200 md:text-5xl">
+              {balanceCents === null
+                ? "…"
+                : `${(balanceCents / 100).toLocaleString("ru-RU")} ₽`}
+            </p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button href="/order">Новый заказ</Button>
+          {isAdmin && (
+            <Button variant="outline" href="/admin">
+              Админка
+            </Button>
+          )}
           <Button variant="outline" type="button" onClick={logout}>
             Выйти
           </Button>
@@ -110,6 +125,8 @@ function DashboardInner() {
       />
 
       <WalletYooKassaCard />
+
+      <ReferralProgramCard />
 
       <div className="mt-12 overflow-x-auto rounded-3xl border border-white/[0.08]">
         <table className="w-full min-w-[640px] text-left text-base">

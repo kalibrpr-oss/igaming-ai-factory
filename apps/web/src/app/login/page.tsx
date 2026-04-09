@@ -44,6 +44,10 @@ function LoginBody() {
             Регистрация
           </Link>
         </p>
+        <p className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100/90">
+          Первый оплаченный заказ — со скидкой <strong>30%</strong> (пока бонус не
+          использован).
+        </p>
         {verifiedOk && (
           <p className="mt-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-base text-emerald-200">
             Email подтверждён. Войдите с паролем.

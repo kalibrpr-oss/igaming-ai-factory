@@ -1,7 +1,8 @@
 import { BrandVoicesSectionPremium } from "@/components/marketing/BrandVoicesSectionPremium";
+import { EconomyPublicSection } from "@/components/marketing/EconomyPublicSection";
 import { Hero } from "@/components/marketing/Hero";
+import { HomeBottomCta } from "@/components/marketing/HomeBottomCta";
 import { Reviews } from "@/components/marketing/Reviews";
-import { Button } from "@/components/ui/Button";
 
 export default function HomePage() {
   return (
@@ -21,7 +22,7 @@ export default function HomePage() {
             },
             {
               t: "Цена видна сразу",
-              d: "Платишь только за текст. Фикс за каждые 100 слов, без скрытых доплат.",
+              d: "Считаем по объёму и пресету; на первый оплаченный заказ — скидка 30%, если бонус ещё активен. Без скрытых доплат в форме.",
             },
           ].map((x) => (
             <div key={x.t} className="liquid-glass liquid-glass-hover p-8 md:p-9">
@@ -33,26 +34,9 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      <EconomyPublicSection />
       <Reviews />
-      <section className="px-4 pb-28">
-        <div className="liquid-glass mx-auto max-w-4xl p-10 text-center shadow-emerald-glow md:p-12">
-          <h2 className="text-3xl font-semibold text-white md:text-4xl">
-            Готов прогнать материал?
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-400 md:text-lg">
-            Регистрация — пара полей. Потом форма заказа и оплата (подключим на следующем
-            этапе).
-          </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Button href="/register" primaryCta>
-              Создать аккаунт
-            </Button>
-            <Button variant="outline" href="/order">
-              Уже есть логин — к заказу
-            </Button>
-          </div>
-        </div>
-      </section>
+      <HomeBottomCta />
     </>
   );
 }

@@ -17,6 +17,11 @@ class RegisterRequest(BaseModel):
     email: DeliverableEmail
     username: str
     password: str = Field(min_length=8, max_length=128)
+    referral_code: str | None = Field(
+        default=None,
+        max_length=32,
+        description="Код пригласившего (из ?ref= или cookie на фронте).",
+    )
 
     @field_validator("username", mode="before")
     @classmethod
@@ -71,6 +76,7 @@ class UserPublic(BaseModel):
     is_email_verified: bool
     email_verified_at: datetime | None = None
     balance_cents: int = 0
+    first_order_discount_active: bool = False
 
     model_config = {"from_attributes": True}
 

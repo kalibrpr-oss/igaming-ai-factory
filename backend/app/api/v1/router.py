@@ -2,12 +2,14 @@ from fastapi import APIRouter
 
 from app.api.v1 import (
     admin_orders,
+    admin_payments,
     admin_users,
     auth,
     brand_voices,
     demo_rewrite,
     health,
     orders,
+    referral,
     wallet_user,
 )
 from app.config import settings
@@ -21,11 +23,15 @@ api_router.include_router(
 )
 api_router.include_router(orders.router, prefix="/orders", tags=["orders"])
 api_router.include_router(wallet_user.router, prefix="/wallet", tags=["wallet"])
+api_router.include_router(referral.router, prefix="/referral", tags=["referral"])
 api_router.include_router(
     admin_users.router, prefix="/admin/users", tags=["admin-users"]
 )
 api_router.include_router(
     admin_orders.router, prefix="/admin/orders", tags=["admin-orders"]
+)
+api_router.include_router(
+    admin_payments.router, prefix="/admin/payments", tags=["admin-payments"]
 )
 
 if settings.enable_internal_wallet_test_flow:

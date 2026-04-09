@@ -30,9 +30,15 @@ from app.services.auth.email_verification import (
 )
 from app.services.auth.jwt_tokens import create_access_token
 from app.services.auth.password import hash_password, verify_password
+from app.services.pricing import first_order_bonus_available
 from app.services.mail.tasks import (
     send_verification_email_task,
     send_verification_email_task_safe,
+)
+from app.services.referrals import (
+    assign_unique_referral_code,
+    normalize_invite_code,
+    resolve_referrer_user_id,
 )
 
 router = APIRouter()
@@ -99,6 +105,7 @@ def _register_response(
         is_email_verified=user.is_email_verified,
         email_verified_at=user.email_verified_at,
         balance_cents=user.balance_cents,
+        first_order_discount_active=first_order_bonus_available(user),
         registration_status=registration_status,
         verification_delivery_status=verification_delivery_status,
         resend_available_in_seconds=resend_available_in_seconds,
@@ -224,6 +231,9 @@ async def register(
     session: AsyncSession = Depends(get_session),
 ) -> RegisterResponse:
     email_norm = _normalize_email(body.email)
+    ref_uid = await resolve_referrer_user_id(
+        session, normalize_invite_code(body.referral_code)
+    )
 
     existing = await session.execute(select(User).where(User.email == email_norm))
     user_existing = existing.scalar_one_or_none()
@@ -237,6 +247,9 @@ async def register(
         cooldown_left = await _get_resend_cooldown_left_seconds(session, user_existing)
         # Последний введённый пароль при повторной регистрации — источник истины для входа после verify.
         user_existing.hashed_password = hash_password(body.password)
+        if user_existing.referrer_user_id is None and ref_uid is not None:
+            user_existing.referrer_user_id = ref_uid
+        await assign_unique_referral_code(session, user_existing)
         if cooldown_left > 0:
             logger.info(
                 "register: existing unverified email on cooldown user_id=%s cooldown_left=%s",
@@ -254,6 +267,7 @@ async def register(
             "register: existing unverified email redirected to verify flow user_id=%s",
             user_existing.id,
         )
+        await session.flush()
         return _register_response(
             user_existing,
             "already_pending_verification",
@@ -272,12 +286,15 @@ async def register(
         hashed_password=hash_password(body.password),
         is_email_verified=False,
         balance_cents=0,
+        referrer_user_id=ref_uid,
     )
     session.add(user)
     try:
         await session.flush()
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Конфликт данных") from None
+
+    await assign_unique_referral_code(session, user)
 
     raw_code, resend_count = await _issue_verification_code(session, user)
     background_tasks.add_task(
@@ -341,7 +358,9 @@ async def verify_email(
     await session.flush()
     return VerifyEmailResponse(
         access_token=token,
-        user=UserPublic.model_validate(user),
+        user=UserPublic.model_validate(user).model_copy(
+            update={"first_order_discount_active": first_order_bonus_available(user)}
+        ),
     )
 
 
@@ -410,5 +429,7 @@ async def login(
 
 
 @router.get("/me", response_model=UserPublic)
-async def me(user: User = Depends(get_current_user)) -> User:
-    return user
+async def me(user: User = Depends(get_current_user)) -> UserPublic:
+    return UserPublic.model_validate(user).model_copy(
+        update={"first_order_discount_active": first_order_bonus_available(user)}
+    )

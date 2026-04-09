@@ -1,4 +1,10 @@
-import { apiGet, apiPostJson } from "@/api/client";
+import { apiGet, apiPatchJson, apiPostJson } from "@/api/client";
+import type {
+  AdminGrantCreditsResponse,
+  AdminPaymentRow,
+  AdminUserDetail,
+  AdminUserRow,
+} from "@/types/admin";
 import type {
   BrandVoiceMeta,
   OrderCreatePayload,
@@ -19,11 +25,30 @@ export async function registerUser(payload: {
   email: string;
   username: string;
   password: string;
+  referral_code?: string;
 }): Promise<RegisterResponse> {
   return apiPostJson<RegisterResponse, typeof payload>(
     `${V}/auth/register`,
     payload
   );
+}
+
+export type ReferralSummary = {
+  referral_code: string;
+  referral_link_query: string;
+  slug_locked: boolean;
+  referrals_count: number;
+  rewards_total_cents: number;
+};
+
+export async function fetchReferralSummary(): Promise<ReferralSummary> {
+  return apiGet<ReferralSummary>(`${V}/referral/summary`);
+}
+
+export async function updateReferralCode(code: string): Promise<ReferralSummary> {
+  return apiPatchJson<ReferralSummary, { code: string }>(`${V}/referral/code`, {
+    code,
+  });
 }
 
 export async function loginUser(payload: {
@@ -55,6 +80,44 @@ export async function resendVerificationEmailRequest(payload: {
 
 export async function fetchMe(): Promise<UserPublic> {
   return apiGet<UserPublic>(`${V}/auth/me`);
+}
+
+export async function fetchAdminUsers(): Promise<AdminUserRow[]> {
+  return apiGet<AdminUserRow[]>(`${V}/admin/users`);
+}
+
+export async function fetchAdminUserDetail(
+  userId: number
+): Promise<AdminUserDetail> {
+  return apiGet<AdminUserDetail>(`${V}/admin/users/${userId}`);
+}
+
+export async function patchAdminUserActive(
+  userId: number,
+  isActive: boolean
+): Promise<AdminUserRow> {
+  return apiPatchJson<AdminUserRow, { is_active: boolean }>(
+    `${V}/admin/users/${userId}`,
+    { is_active: isActive }
+  );
+}
+
+export async function grantAdminCredits(
+  userId: number,
+  amountCents: number,
+  reason: string
+): Promise<AdminGrantCreditsResponse> {
+  return apiPostJson<
+    AdminGrantCreditsResponse,
+    { amount_cents: number; reason: string }
+  >(`${V}/admin/users/${userId}/grant-credits`, {
+    amount_cents: amountCents,
+    reason,
+  });
+}
+
+export async function fetchAdminPayments(): Promise<AdminPaymentRow[]> {
+  return apiGet<AdminPaymentRow[]>(`${V}/admin/payments`);
 }
 
 /** Тестовое пополнение (только если на бэкенде enable_user_wallet_mock_topup). */

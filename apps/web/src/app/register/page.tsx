@@ -2,6 +2,8 @@
 
 import { registerUser } from "@/api/endpoints";
 import { Button } from "@/components/ui/Button";
+import { PasswordFieldToggle } from "@/components/ui/PasswordFieldToggle";
+import { getReferralCookie } from "@/lib/referral-cookie";
 import { validateUsername } from "@/lib/username-rules";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +24,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordRepeat, setPasswordRepeat] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,9 +37,20 @@ export default function RegisterPage() {
       setErr(usernameErr);
       return;
     }
+    if (password !== passwordRepeat) {
+      setErr("Пароли не совпадают.");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await registerUser({ email, username, password });
+      const refCookie = getReferralCookie();
+      const res = await registerUser({
+        email,
+        username,
+        password,
+        ...(refCookie ? { referral_code: refCookie } : {}),
+      });
+
       const emailNorm = email.trim().toLowerCase();
       const q = new URLSearchParams();
       q.set("email", emailNorm);
@@ -68,6 +82,10 @@ export default function RegisterPage() {
           <Link href="/login" className="text-gem-bright hover:underline">
             Войти
           </Link>
+        </p>
+        <p className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100/90">
+          Скидка <strong>30%</strong> на первый оплаченный заказ — после регистрации и
+          пополнения баланса.
         </p>
         <p className="mt-3 text-sm text-zinc-500">
           После регистрации откроем подтверждение email. Если письмо не пришло
@@ -102,18 +120,22 @@ export default function RegisterPage() {
               От 4 до 15 символов: только английские буквы и цифры.
             </span>
           </label>
-          <label className="block text-base text-zinc-400">
-            Пароль (мин. 8 символов)
-            <input
-              type="password"
-              autoComplete="new-password"
-              className="mt-2 w-full rounded-xl border border-white/10 bg-ink-900/80 px-4 py-3 text-base text-white outline-none focus:ring-2 focus:ring-emerald-500/40"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-            />
-          </label>
+          <PasswordFieldToggle
+            label="Пароль (мин. 8 символов)"
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
+          <PasswordFieldToggle
+            label="Повторите пароль"
+            value={passwordRepeat}
+            onChange={setPasswordRepeat}
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
           {err && (
             <p className="text-base text-red-400">{err}</p>
           )}

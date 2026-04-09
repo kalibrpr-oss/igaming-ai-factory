@@ -104,4 +104,9 @@ async def apply_payment_succeeded(
         payment.raw_payload = raw_payload
 
     await session.flush()
+
+    from app.services.referrals import apply_referrer_reward_on_referee_topup
+
+    await apply_referrer_reward_on_referee_topup(session, payment)
+
     return payment

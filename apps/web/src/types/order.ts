@@ -51,6 +51,7 @@ export interface OrderQuoteResponse {
   discount_cents: number;
   price_cents: number;
   currency: string;
+  first_order_bonus_applied?: boolean;
 }
 
 export type OrderStatus =

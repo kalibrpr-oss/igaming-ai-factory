@@ -21,6 +21,8 @@ export interface UserPublic {
   is_admin: boolean;
   is_email_verified: boolean;
   balance_cents?: number;
+  /** Скидка 30% на первый заказ ещё доступна */
+  first_order_discount_active?: boolean;
 }
 
 export type RegisterStatus = "created" | "already_pending_verification";

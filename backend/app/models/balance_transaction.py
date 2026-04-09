@@ -29,6 +29,8 @@ class BalanceTransaction(Base):
     )
     reference_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     idempotency_key: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    # Комментарий админа при ручной корректировке (adjustment).
+    note: Mapped[str | None] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

@@ -54,11 +54,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# JWT уходит в заголовке Authorization, не в cookie — credentials для CORS не нужны.
+# Иначе allow_origins=["*"] + allow_credentials=True недопустима спецификацией: браузер
+# режет ответ (типичная картина: фронт в Docker 172.x → API на 127.0.0.1).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_origin_regex=".*",
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

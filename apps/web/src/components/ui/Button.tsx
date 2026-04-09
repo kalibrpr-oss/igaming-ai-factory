@@ -66,8 +66,9 @@ export function Button({
     </span>
   );
   if (href) {
+    /* Link не принимает пропсы <button> (type, disabled, …) — не пробрасываем rest */
     return (
-      <Link href={href} className={cls} onPointerDown={handlePointerDown} {...rest}>
+      <Link href={href} className={cls} onPointerDown={handlePointerDown}>
         {inner}
       </Link>
     );

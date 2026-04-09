@@ -17,13 +17,23 @@ class OrderPriceBreakdown:
     bonus_applied: bool
 
 
-def _is_first_order_bonus_available(user: User) -> bool:
+def first_order_bonus_available(user: User) -> bool:
+    """
+    Скидка 30% на первый оплаченный заказ (пока не списали бонус).
+    Если задан first_order_bonus_expires_at — действует только до этой даты.
+    Если None — без дедлайна, пока не оплатили первый заказ со скидкой.
+    """
     if user.first_order_bonus_consumed_at is not None:
         return False
     expires_at = user.first_order_bonus_expires_at
     if expires_at is None:
-        return False
-    return expires_at >= datetime.now(timezone.utc)
+        return True
+    exp = (
+        expires_at.replace(tzinfo=timezone.utc)
+        if expires_at.tzinfo is None
+        else expires_at
+    )
+    return exp >= datetime.now(timezone.utc)
 
 
 def calculate_order_price(user: User, target_word_count: int) -> OrderPriceBreakdown:
@@ -36,7 +46,7 @@ def calculate_order_price(user: User, target_word_count: int) -> OrderPriceBreak
         )
 
     price_base_cents = target_word_count * PRICE_PER_WORD_CENTS
-    bonus_applied = _is_first_order_bonus_available(user)
+    bonus_applied = first_order_bonus_available(user)
     discount_cents = (
         (price_base_cents * FIRST_ORDER_BONUS_PERCENT) // 100 if bonus_applied else 0
     )

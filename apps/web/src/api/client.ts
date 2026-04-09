@@ -58,3 +58,19 @@ export async function apiPostJson<T, B extends object>(
   if (!res.ok) throw new Error(await parseError(res));
   return res.json() as Promise<T>;
 }
+
+export async function apiPatchJson<T, B extends object>(
+  path: string,
+  body: B
+): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeader(),
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<T>;
+}

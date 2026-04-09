@@ -6,7 +6,10 @@ import {
 } from "@/components/marketing/HeroWreathDecor";
 import { Button } from "@/components/ui/Button";
 import { GradientHeading } from "@/components/ui/GradientHeading";
+import { getToken } from "@/lib/auth-storage";
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 /** Только opacity: без translate/scale у контента — иначе после скролла всплывает шов с overflow и fixed mesh */
 const heroEnter = {
@@ -18,6 +21,13 @@ const heroEnter = {
 };
 
 export function Hero() {
+  const path = usePathname();
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    setAuthed(!!getToken());
+  }, [path]);
+
   return (
     <section className="relative overflow-x-hidden px-4 pb-24 pt-28 sm:pb-28 sm:pt-36">
       {/*
@@ -86,13 +96,23 @@ export function Hero() {
                   </div>
                   <div className="min-w-0" aria-hidden />
                   <div className="flex shrink-0 justify-center">
-                    <Button
-                      href="/register"
-                      primaryCta
-                      className="min-w-0 px-5 sm:px-7"
-                    >
-                      Старт — регистрация
-                    </Button>
+                    {authed ? (
+                      <Button
+                        href="/dashboard"
+                        primaryCta
+                        className="min-w-0 px-5 sm:px-7"
+                      >
+                        В кабинет
+                      </Button>
+                    ) : (
+                      <Button
+                        href="/register"
+                        primaryCta
+                        className="min-w-0 px-5 sm:px-7"
+                      >
+                        Старт — регистрация
+                      </Button>
+                    )}
                   </div>
                   <div className="min-w-0" aria-hidden />
                   <div className="flex min-w-0 justify-start">
@@ -105,9 +125,20 @@ export function Hero() {
               </Button>
             </div>
             <div className="hidden flex-wrap items-center justify-center gap-6 lg:flex">
-              <Button href="/register" primaryCta>
-                Старт — регистрация
-              </Button>
+              {authed ? (
+                <>
+                  <Button href="/dashboard" primaryCta>
+                    Кабинет
+                  </Button>
+                  <Button variant="outline" href="/order">
+                    Новый заказ
+                  </Button>
+                </>
+              ) : (
+                <Button href="/register" primaryCta>
+                  Старт — регистрация
+                </Button>
+              )}
               <Button variant="ghost" href="/guide">
                 Как это работает
               </Button>
