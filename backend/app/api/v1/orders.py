@@ -1,3 +1,6 @@
+import logging
+
+from anthropic import APIStatusError
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,12 +25,20 @@ from app.services.pricing import calculate_order_price, quote_price_cents
 from app.prompts.types import GenerationContext
 from app.services.llm.generation_pipeline import run_seo_pipeline_async
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 
 def _to_client_order_response(order: Order) -> OrderResponse:
+    """Текст показываем только когда он уже есть (модерация / готово / ошибка с черновиком)."""
     payload = OrderResponse.model_validate(order).model_dump()
-    if order.status != OrderStatus.completed:
+    show_text = order.status in (
+        OrderStatus.completed,
+        OrderStatus.review_required,
+        OrderStatus.failed,
+    )
+    if not show_text:
         payload["generated_text"] = None
     return OrderResponse(**payload)
 
@@ -151,10 +162,28 @@ async def generate_order_text(
 
     try:
         generated = await run_seo_pipeline_async(ctx)
+    except RuntimeError as e:
+        order.status = OrderStatus.failed
+        await session.flush()
+        raise HTTPException(
+            status_code=503,
+            detail=str(e),
+        ) from e
+    except APIStatusError as e:
+        order.status = OrderStatus.failed
+        await session.flush()
+        raise HTTPException(
+            status_code=502,
+            detail=e.message[:1200],
+        ) from e
     except Exception as e:
         order.status = OrderStatus.failed
         await session.flush()
-        raise HTTPException(status_code=500, detail="Ошибка генерации") from e
+        logger.exception("generate_order_text: непредвиденная ошибка order_id=%s", order_id)
+        raise HTTPException(
+            status_code=500,
+            detail="Ошибка генерации",
+        ) from e
 
     order.generated_text = generated.final_text
     order.status = OrderStatus.review_required
