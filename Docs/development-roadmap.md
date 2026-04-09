@@ -33,13 +33,13 @@
 
 **Сделано (dev):** `POST /api/v1/wallet/mock-topup` при `ENABLE_USER_WALLET_MOCK_TOPUP=true` + блок в кабинете при `NEXT_PUBLIC_ENABLE_WALLET_MOCK=true` (мгновенное зачисление через существующий `apply_payment_succeeded`).
 
-**Цель (прод):** тестовый магазин ЮKassa, webhook, зачисление `balance_cents`, журнал `payments`, идемпотентность.
+**Сделано (ЮKassa):** при `YOOKASSA_SHOP_ID` + `YOOKASSA_SECRET_KEY` — `POST /wallet/yookassa/create` (редирект), `POST /wallet/yookassa/webhook` (проверка статуса через API + `apply_payment_succeeded`), `GET /wallet/yookassa/status`, блок в кабинете. В личном кабинете ЮKassa указать публичный URL webhook.
 
 | # | Задача | Проверка |
 |---|--------|----------|
 | 2.1 | Актуализировать кабинет ЮKassa, ключи в `.env` | Документация провайдера |
-| 2.2 | Endpoint создания платежа + redirect/capture | Тестовая оплата 1 ₽ |
-| 2.3 | Webhook → запись payment → начисление баланса один раз на `payment_id` | Повтор webhook не дублирует |
+| 2.2 | ~~Endpoint создания платежа + redirect~~ | Готово |
+| 2.3 | ~~Webhook → зачисление~~ | Готово (идемпотентность в settlement) |
 
 ---
 

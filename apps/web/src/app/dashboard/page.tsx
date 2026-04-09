@@ -4,6 +4,7 @@ import { fetchMe, fetchOrders } from "@/api/endpoints";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { Button } from "@/components/ui/Button";
 import { WalletDevTopup } from "@/components/wallet/WalletDevTopup";
+import { WalletYooKassaCard } from "@/components/wallet/WalletYooKassaCard";
 import { clearToken } from "@/lib/auth-storage";
 import type { OrderDto, OrderStatus } from "@/types";
 import Link from "next/link";
@@ -26,6 +27,7 @@ function DashboardInner() {
   const [orders, setOrders] = useState<OrderDto[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [balanceCents, setBalanceCents] = useState<number | null>(null);
+  const [topupHint, setTopupHint] = useState(false);
 
   const load = useCallback(() => {
     fetchOrders()
@@ -43,6 +45,15 @@ function DashboardInner() {
     load();
     loadBalance();
   }, [load, loadBalance]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("topup") === "yookassa") {
+      setTopupHint(true);
+      loadBalance();
+    }
+  }, [loadBalance]);
 
   function logout() {
     clearToken();
@@ -83,6 +94,13 @@ function DashboardInner() {
         </p>
       )}
 
+      {topupHint && (
+        <p className="mt-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 text-base text-emerald-100">
+          Возврат с оплаты: если деньги прошли, баланс обновится через несколько
+          секунд. При необходимости обнови страницу.
+        </p>
+      )}
+
       <WalletDevTopup
         balanceCents={balanceCents}
         onSuccess={(cents) => {
@@ -90,6 +108,8 @@ function DashboardInner() {
           load();
         }}
       />
+
+      <WalletYooKassaCard />
 
       <div className="mt-12 overflow-x-auto rounded-3xl border border-white/[0.08]">
         <table className="w-full min-w-[640px] text-left text-base">

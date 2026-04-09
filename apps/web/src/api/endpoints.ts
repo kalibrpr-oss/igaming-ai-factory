@@ -68,6 +68,24 @@ export async function mockUserWalletTopup(amountCents: number): Promise<{
   >(`${V}/wallet/mock-topup`, { amount_cents: amountCents });
 }
 
+export async function fetchYooKassaWalletStatus(): Promise<{
+  yookassa_topup_available: boolean;
+}> {
+  return apiGet<{ yookassa_topup_available: boolean }>(
+    `${V}/wallet/yookassa/status`
+  );
+}
+
+export async function createYooKassaWalletTopup(amountCents: number): Promise<{
+  payment_id: number;
+  confirmation_url: string;
+}> {
+  return apiPostJson<
+    { payment_id: number; confirmation_url: string },
+    { amount_cents: number }
+  >(`${V}/wallet/yookassa/create`, { amount_cents: amountCents });
+}
+
 export async function fetchBrandVoices(): Promise<{ items: BrandVoiceMeta[] }> {
   return apiGet<{ items: BrandVoiceMeta[] }>(`${V}/brand-voices`);
 }

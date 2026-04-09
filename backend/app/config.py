@@ -115,5 +115,19 @@ class Settings(BaseSettings):
         ),
     )
 
+    public_app_url: str = Field(
+        default="http://127.0.0.1:3000",
+        description="Базовый URL фронта (return_url после оплаты ЮKassa, без слэша в конце).",
+    )
+
+    yookassa_shop_id: str = Field(
+        default="",
+        description="shopId магазина ЮKassa (пусто — реальные платежи отключены).",
+    )
+    yookassa_secret_key: str = Field(
+        default="",
+        description="Секретный ключ ЮKassa",
+    )
+
 
 settings = Settings()
