@@ -12,7 +12,16 @@ export default function AdminHomePage() {
         Список пользователей, карточки, платежи. Пароли не показываем — только
         блокировка и выдача Credits с причиной в проводке.
       </p>
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Link
+          href="/admin/review"
+          className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.06] p-6 transition-colors hover:border-amber-500/35 hover:bg-amber-500/[0.09]"
+        >
+          <h2 className="text-lg font-medium text-amber-100/95">Модерация</h2>
+          <p className="mt-2 text-sm text-zinc-500">
+            Очередь заказов на проверку текста после генерации
+          </p>
+        </Link>
         <Link
           href="/admin/users"
           className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition-colors hover:border-white/[0.14] hover:bg-white/[0.05]"

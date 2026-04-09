@@ -62,6 +62,12 @@ function AdminShell({ children }: { children: React.ReactNode }) {
             Платежи
           </Link>
           <Link
+            href="/admin/review"
+            className="text-zinc-300 transition-colors hover:text-white"
+          >
+            Модерация
+          </Link>
+          <Link
             href="/dashboard"
             className="ml-auto text-zinc-500 transition-colors hover:text-zinc-300"
           >

@@ -69,3 +69,22 @@ export type AdminGrantCreditsResponse = {
   transaction_id: number;
   new_balance_cents: number;
 };
+
+/** Заказ в очереди модерации (статус review_required). */
+export type AdminReviewOrderRow = {
+  id: number;
+  user_id: number;
+  brand_name: string;
+  target_word_count: number;
+  price_cents: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminReviewActionResponse = {
+  order_id: number;
+  status: string;
+  moderated_at: string;
+  moderation_notes: string | null;
+};

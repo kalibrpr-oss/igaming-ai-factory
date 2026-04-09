@@ -2,6 +2,8 @@ import { apiGet, apiPatchJson, apiPostJson } from "@/api/client";
 import type {
   AdminGrantCreditsResponse,
   AdminPaymentRow,
+  AdminReviewActionResponse,
+  AdminReviewOrderRow,
   AdminUserDetail,
   AdminUserRow,
 } from "@/types/admin";
@@ -118,6 +120,30 @@ export async function grantAdminCredits(
 
 export async function fetchAdminPayments(): Promise<AdminPaymentRow[]> {
   return apiGet<AdminPaymentRow[]>(`${V}/admin/payments`);
+}
+
+export async function fetchAdminReviewQueue(): Promise<AdminReviewOrderRow[]> {
+  return apiGet<AdminReviewOrderRow[]>(`${V}/admin/orders/review-queue`);
+}
+
+export async function approveAdminOrderReview(
+  orderId: number,
+  notes: string | null
+): Promise<AdminReviewActionResponse> {
+  return apiPostJson<
+    AdminReviewActionResponse,
+    { notes: string | null }
+  >(`${V}/admin/orders/${orderId}/review/approve`, { notes });
+}
+
+export async function rejectAdminOrderReview(
+  orderId: number,
+  notes: string | null
+): Promise<AdminReviewActionResponse> {
+  return apiPostJson<
+    AdminReviewActionResponse,
+    { notes: string | null }
+  >(`${V}/admin/orders/${orderId}/review/reject`, { notes });
 }
 
 /** Тестовое пополнение (только если на бэкенде enable_user_wallet_mock_topup). */

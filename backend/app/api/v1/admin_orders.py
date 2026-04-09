@@ -22,13 +22,14 @@ router = APIRouter()
 async def list_review_queue(
     session: AsyncSession = Depends(get_session),
     _: User = Depends(get_current_admin),
-) -> list[Order]:
+) -> list[AdminReviewOrderRow]:
     result = await session.execute(
         select(Order)
         .where(Order.status == OrderStatus.review_required)
         .order_by(Order.updated_at.asc())
     )
-    return list(result.scalars().all())
+    orders = list(result.scalars().all())
+    return [AdminReviewOrderRow.model_validate(o) for o in orders]
 
 
 @router.post(
