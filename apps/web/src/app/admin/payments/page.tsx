@@ -1,6 +1,7 @@
 "use client";
 
 import { fetchAdminPayments } from "@/api/endpoints";
+import { adminUserDetailPath } from "@/lib/admin-user-detail-path";
 import type { AdminPaymentRow } from "@/types/admin";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -84,7 +85,7 @@ export default function AdminPaymentsPage() {
                   <td className="px-4 py-3 font-mono text-xs">{p.id}</td>
                   <td className="px-4 py-3">
                     <Link
-                      href={`/admin/users/${p.user_id}`}
+                      href={adminUserDetailPath(p.user_id)}
                       className="text-gem-bright hover:underline"
                     >
                       {p.user_username}

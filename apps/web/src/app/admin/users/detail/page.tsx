@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/Button";
 import type { AdminUserDetail } from "@/types/admin";
 import type { OrderStatus } from "@/types";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { adminUserDetailPath } from "@/lib/admin-user-detail-path";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 const orderStatusRu: Record<OrderStatus, string> = {
   draft: "Черновик",
@@ -30,11 +31,10 @@ function deviceRu(kind: string): string {
   return "Неизвестно";
 }
 
-export default function AdminUserDetailPage() {
-  const params = useParams();
-  const rawId = params.userId;
-  const userId =
-    typeof rawId === "string" ? parseInt(rawId, 10) : Number.NaN;
+function AdminUserDetailInner() {
+  const searchParams = useSearchParams();
+  const rawId = searchParams.get("id");
+  const userId = rawId ? parseInt(rawId, 10) : Number.NaN;
 
   const [detail, setDetail] = useState<AdminUserDetail | null>(null);
   const [myId, setMyId] = useState<number | null>(null);
@@ -120,7 +120,8 @@ export default function AdminUserDetailPage() {
   if (!Number.isFinite(userId)) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-16 text-zinc-500">
-        Некорректный ID
+        Открой карточку по ссылке из списка пользователей (нужен параметр{" "}
+        <span className="font-mono text-zinc-400">?id=</span>).
       </div>
     );
   }
@@ -251,7 +252,7 @@ export default function AdminUserDetailPage() {
             {detail.referrer ? (
               <p className="mt-2 text-zinc-300">
                 <Link
-                  href={`/admin/users/${detail.referrer.id}`}
+                  href={adminUserDetailPath(detail.referrer.id)}
                   className="text-gem-bright hover:underline"
                 >
                   {detail.referrer.username}
@@ -294,7 +295,7 @@ export default function AdminUserDetailPage() {
                       >
                         <td className="px-4 py-2 font-mono text-xs">
                           <Link
-                            href={`/admin/users/${r.id}`}
+                            href={adminUserDetailPath(r.id)}
                             className="text-gem-bright hover:underline"
                           >
                             {r.id}
@@ -362,5 +363,19 @@ export default function AdminUserDetailPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function AdminUserDetailPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-6xl px-4 py-16 text-zinc-500">
+          Загрузка…
+        </div>
+      }
+    >
+      <AdminUserDetailInner />
+    </Suspense>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { fetchAdminUsers } from "@/api/endpoints";
+import { adminUserDetailPath } from "@/lib/admin-user-detail-path";
 import type { AdminUserRow } from "@/types/admin";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -79,7 +80,7 @@ export default function AdminUsersPage() {
                 >
                   <td className="px-4 py-3 font-mono text-xs">
                     <Link
-                      href={`/admin/users/${u.id}`}
+                      href={adminUserDetailPath(u.id)}
                       className="text-gem-bright hover:underline"
                     >
                       {u.id}
