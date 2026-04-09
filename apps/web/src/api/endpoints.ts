@@ -57,6 +57,17 @@ export async function fetchMe(): Promise<UserPublic> {
   return apiGet<UserPublic>(`${V}/auth/me`);
 }
 
+/** Тестовое пополнение (только если на бэкенде enable_user_wallet_mock_topup). */
+export async function mockUserWalletTopup(amountCents: number): Promise<{
+  payment_id: number;
+  user_balance_cents: number;
+}> {
+  return apiPostJson<
+    { payment_id: number; user_balance_cents: number },
+    { amount_cents: number }
+  >(`${V}/wallet/mock-topup`, { amount_cents: amountCents });
+}
+
 export async function fetchBrandVoices(): Promise<{ items: BrandVoiceMeta[] }> {
   return apiGet<{ items: BrandVoiceMeta[] }>(`${V}/brand-voices`);
 }

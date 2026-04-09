@@ -8,6 +8,7 @@ from app.api.v1 import (
     demo_rewrite,
     health,
     orders,
+    wallet_user,
 )
 from app.config import settings
 
@@ -19,6 +20,7 @@ api_router.include_router(
     demo_rewrite.router, prefix="/demo", tags=["demo"]
 )
 api_router.include_router(orders.router, prefix="/orders", tags=["orders"])
+api_router.include_router(wallet_user.router, prefix="/wallet", tags=["wallet"])
 api_router.include_router(
     admin_users.router, prefix="/admin/users", tags=["admin-users"]
 )

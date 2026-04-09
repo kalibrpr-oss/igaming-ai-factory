@@ -1,8 +1,9 @@
 "use client";
 
-import { fetchOrders } from "@/api/endpoints";
+import { fetchMe, fetchOrders } from "@/api/endpoints";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { Button } from "@/components/ui/Button";
+import { WalletDevTopup } from "@/components/wallet/WalletDevTopup";
 import { clearToken } from "@/lib/auth-storage";
 import type { OrderDto, OrderStatus } from "@/types";
 import Link from "next/link";
@@ -24,6 +25,7 @@ function DashboardInner() {
   const router = useRouter();
   const [orders, setOrders] = useState<OrderDto[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [balanceCents, setBalanceCents] = useState<number | null>(null);
 
   const load = useCallback(() => {
     fetchOrders()
@@ -31,9 +33,16 @@ function DashboardInner() {
       .catch((e) => setErr(e instanceof Error ? e.message : "Не удалось загрузить заказы"));
   }, []);
 
+  const loadBalance = useCallback(() => {
+    fetchMe()
+      .then((me) => setBalanceCents(me.balance_cents ?? 0))
+      .catch(() => setBalanceCents(null));
+  }, []);
+
   useEffect(() => {
     load();
-  }, [load]);
+    loadBalance();
+  }, [load, loadBalance]);
 
   function logout() {
     clearToken();
@@ -48,7 +57,17 @@ function DashboardInner() {
           <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
             Кабинет
           </h1>
-          <p className="mt-2 text-base text-zinc-500 md:text-lg">История заказов и статусы</p>
+          <p className="mt-2 text-base text-zinc-500 md:text-lg">
+            История заказов и статусы
+            {balanceCents !== null && (
+              <span className="mt-1 block text-sm text-zinc-400">
+                Баланс:{" "}
+                <span className="font-medium text-emerald-200/90">
+                  {(balanceCents / 100).toLocaleString("ru-RU")} ₽
+                </span>
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button href="/order">Новый заказ</Button>
@@ -63,6 +82,14 @@ function DashboardInner() {
           {err}
         </p>
       )}
+
+      <WalletDevTopup
+        balanceCents={balanceCents}
+        onSuccess={(cents) => {
+          setBalanceCents(cents);
+          load();
+        }}
+      />
 
       <div className="mt-12 overflow-x-auto rounded-3xl border border-white/[0.08]">
         <table className="w-full min-w-[640px] text-left text-base">

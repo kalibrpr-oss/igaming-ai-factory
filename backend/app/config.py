@@ -98,6 +98,15 @@ class Settings(BaseSettings):
         description="Включает POST /api/v1/internal/wallet-test/* (только с admin JWT)",
     )
 
+    enable_user_wallet_mock_topup: bool = Field(
+        default=False,
+        description=(
+            "POST /api/v1/wallet/mock-topup — мгновенное тестовое пополнение баланса "
+            "для залогиненного пользователя (provider=mock). Только для локальной разработки; "
+            "на продакшене всегда false."
+        ),
+    )
+
     email_check_deliverability: bool = Field(
         default=True,
         description=(

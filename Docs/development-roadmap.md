@@ -31,7 +31,9 @@
 
 ## Этап 2 — Пополнение баланса (ЮKassa / ЮMoney)
 
-**Цель:** тестовый магазин, webhook, зачисление `balance_cents`, журнал `payments`, идемпотентность.
+**Сделано (dev):** `POST /api/v1/wallet/mock-topup` при `ENABLE_USER_WALLET_MOCK_TOPUP=true` + блок в кабинете при `NEXT_PUBLIC_ENABLE_WALLET_MOCK=true` (мгновенное зачисление через существующий `apply_payment_succeeded`).
+
+**Цель (прод):** тестовый магазин ЮKassa, webhook, зачисление `balance_cents`, журнал `payments`, идемпотентность.
 
 | # | Задача | Проверка |
 |---|--------|----------|
