@@ -9,12 +9,12 @@ export default function HomePage() {
     <>
       <Hero />
       <BrandVoicesSectionPremium />
-      <section className="bg-pitch-soft/30 px-4 py-20 backdrop-blur-sm">
+      <section className="border-t border-white/[0.04] px-4 py-20">
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3 md:gap-10">
           {[
             {
               t: "ТЗ в одной форме",
-              d: "Бренд, ключи, LSI, плотность, язык, тип статьи. Всё уходит в генерацию.",
+              d: "Бренд, ключи, LSI, плотность, язык, тип материала — единый набор полей для любой ниши.",
             },
             {
               t: "Три голоса",

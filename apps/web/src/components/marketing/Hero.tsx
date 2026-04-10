@@ -1,15 +1,9 @@
 "use client";
 
-import {
-  HeroWreathDecor,
-  HeroWreathMobileCtaColumn,
-} from "@/components/marketing/HeroWreathDecor";
+import { HeroWreathDecor } from "@/components/marketing/HeroWreathDecor";
 import { Button } from "@/components/ui/Button";
 import { GradientHeading } from "@/components/ui/GradientHeading";
-import { getToken } from "@/lib/auth-storage";
 import { motion } from "framer-motion";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 /** Только opacity: без translate/scale у контента — иначе после скролла всплывает шов с overflow и fixed mesh */
 const heroEnter = {
@@ -21,15 +15,8 @@ const heroEnter = {
 };
 
 export function Hero() {
-  const path = usePathname();
-  const [authed, setAuthed] = useState(false);
-
-  useEffect(() => {
-    setAuthed(!!getToken());
-  }, [path]);
-
   return (
-    <section className="relative overflow-x-hidden px-4 pb-24 pt-28 sm:pb-28 sm:pt-36">
+    <section className="relative overflow-x-hidden px-4 pb-24 pt-14 sm:pb-28 sm:pt-16 md:pt-[4.5rem]">
       {/*
         Сплошная база на всю секцию: под ней не виден fixed MeshBackground,
         значит нет стыка с анимированными blur/scale слоями при repaint после скролла.
@@ -38,15 +25,26 @@ export function Hero() {
         className="pointer-events-none absolute inset-0 z-0 bg-[#05020D]"
         aria-hidden
       />
+      <HeroWreathDecor />
+      {/*
+        Крупная светлая дуга за типографикой (референс Quantix): мягкий эллипс снизу слоя + лёгкий «обод».
+      */}
       <div
-        className="pointer-events-none absolute inset-0 z-0"
-        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[4.5rem] z-[2] h-[min(28rem,78vw)] w-[min(110rem,220vw)] -translate-x-1/2 blur-[48px] sm:top-[5.5rem] md:top-[6.5rem] md:h-[min(32rem,85vw)] md:blur-[56px]"
         style={{
           background:
-            "radial-gradient(ellipse 85% 50% at 50% 0%, rgba(88, 28, 135, 0.22), transparent 62%)",
+            "radial-gradient(ellipse 100% 48% at 50% 100%, rgba(255,255,255,0.2) 0%, rgba(233,213,255,0.14) 18%, rgba(167,139,250,0.1) 36%, rgba(99,102,241,0.06) 52%, transparent 68%)",
         }}
+        aria-hidden
       />
-      <HeroWreathDecor />
+      <div
+        className="pointer-events-none absolute left-1/2 top-[5rem] z-[2] h-[min(14rem,42vw)] w-[min(72rem,160vw)] -translate-x-1/2 blur-[20px] sm:top-[6rem] md:top-[7rem] md:blur-[24px]"
+        style={{
+          background:
+            "radial-gradient(ellipse 95% 38% at 50% 100%, rgba(255,255,255,0.28) 0%, rgba(244,240,255,0.12) 35%, transparent 58%)",
+        }}
+        aria-hidden
+      />
       <div className="relative z-10 mx-auto max-w-5xl text-center">
         <motion.div
           variants={heroEnter}
@@ -54,95 +52,35 @@ export function Hero() {
           animate="visible"
           className="mx-auto flex max-w-4xl flex-col items-center"
         >
-          <p className="mb-6 inline-flex rounded-full border border-white/10 bg-white/[0.08] px-6 py-2.5 text-sm font-medium uppercase tracking-[0.16em] text-violet-200/90 sm:text-base">
-            SaaS для PBN · AI-конвейер
+          <p className="mb-5 text-center sm:mb-6" aria-label="Conveer 2.0">
+            <span className="inline-flex flex-wrap items-baseline justify-center text-3xl font-semibold leading-none tracking-[-0.04em] [font-feature-settings:normal] [font-variant-numeric:normal] sm:text-4xl md:text-[2.35rem]">
+              <span className="heading-shimmer text-transparent">Conveer</span>
+              <span className="heading-shimmer ml-[0.22em] text-[0.87em] text-transparent">
+                2.0
+              </span>
+            </span>
           </p>
-          <ul
-            className="mb-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-base font-medium text-zinc-400 sm:text-lg"
-            aria-label="Ценности продукта"
-          >
-            <li className="text-violet-200/95">Высокотехнологичность</li>
-            <li className="hidden text-zinc-600 sm:inline" aria-hidden>
-              ·
-            </li>
-            <li className="text-indigo-200/90">Premium</li>
-            <li className="hidden text-zinc-600 sm:inline" aria-hidden>
-              ·
-            </li>
-            <li className="text-emerald-300/90">Совершенство</li>
-          </ul>
+          <p className="mb-6 inline-flex rounded-full border border-white/10 bg-white/[0.08] px-6 py-2.5 text-sm font-medium uppercase tracking-[0.16em] text-violet-200/90 sm:text-base">
+            SaaS · PBN · тематика в параметрах заказа
+          </p>
           <GradientHeading
             as="h1"
-            className="text-5xl font-bold leading-[1.08] tracking-[-0.03em] sm:text-6xl md:text-7xl"
+            className="text-[2.65rem] font-bold leading-[1.08] tracking-[-0.03em] sm:text-5xl md:text-6xl"
           >
-            Завод SEO-статей под казино
+            SEO-статьи: iGaming и другие ниши
           </GradientHeading>
           <p className="mt-12 max-w-3xl text-xl leading-relaxed text-slate-400 sm:text-2xl">
-            Бренд, ключи, LSI, голос подачи — на выходе структурированный текст и{" "}
-            <span className="text-violet-200/90">.docx</span> на почту. Без ручной возни
-            с копирайтерами.
+            В форме — бренд, ключи, LSI, стиль подачи. На выходе — структура и{" "}
+            <span className="text-violet-200/90">.docx</span> на почту. Тематика задаётся
+            параметрами заказа; типовой профиль — iGaming и PBN.
           </p>
-          <div className="mt-16 w-full">
-            <div className="flex flex-col items-center gap-4 lg:hidden">
-              {/* Полная ширина экрана: столбики у краёв, кнопка по центру */}
-              <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 px-4">
-                {/*
-                  Симметрия: одинаковая ширина слотов под столбики + два равных 1fr до CTA —
-                  иначе auto-колонки разной ширины дают разный визуальный зазор до кнопки.
-                */}
-                <div className="grid w-full grid-cols-[4.5rem_minmax(0,1fr)_auto_minmax(0,1fr)_4.5rem] items-center sm:grid-cols-[5rem_minmax(0,1fr)_auto_minmax(0,1fr)_5rem]">
-                  <div className="flex min-w-0 justify-end">
-                    <HeroWreathMobileCtaColumn side="left" />
-                  </div>
-                  <div className="min-w-0" aria-hidden />
-                  <div className="flex shrink-0 justify-center">
-                    {authed ? (
-                      <Button
-                        href="/dashboard"
-                        primaryCta
-                        className="min-w-0 px-5 sm:px-7"
-                      >
-                        В кабинет
-                      </Button>
-                    ) : (
-                      <Button
-                        href="/register"
-                        primaryCta
-                        className="min-w-0 px-5 sm:px-7"
-                      >
-                        Старт — регистрация
-                      </Button>
-                    )}
-                  </div>
-                  <div className="min-w-0" aria-hidden />
-                  <div className="flex min-w-0 justify-start">
-                    <HeroWreathMobileCtaColumn side="right" />
-                  </div>
-                </div>
-              </div>
-              <Button variant="ghost" href="/guide">
-                Как это работает
-              </Button>
-            </div>
-            <div className="hidden flex-wrap items-center justify-center gap-6 lg:flex">
-              {authed ? (
-                <>
-                  <Button href="/dashboard" primaryCta>
-                    Кабинет
-                  </Button>
-                  <Button variant="outline" href="/order">
-                    Новый заказ
-                  </Button>
-                </>
-              ) : (
-                <Button href="/register" primaryCta>
-                  Старт — регистрация
-                </Button>
-              )}
-              <Button variant="ghost" href="/guide">
-                Как это работает
-              </Button>
-            </div>
+          <div className="mt-14 flex w-full flex-row flex-wrap items-center justify-center gap-4 sm:mt-16 sm:gap-5">
+            <Button href="/order" primaryCta className="min-w-[10.5rem]">
+              Новый заказ
+            </Button>
+            <Button variant="ghost" href="/guide" className="min-w-[10.5rem]">
+              Как это работает
+            </Button>
           </div>
         </motion.div>
       </div>

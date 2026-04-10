@@ -18,7 +18,7 @@ import type { BrandVoiceId } from "@/types";
 import { VoiceCharacterArt } from "@/components/marketing/VoiceCharacterArt";
 
 const PLACEHOLDER =
-  "Вставь сюда свой черновик (примерно до 50 слов): про казино, бонусы, вывод, лицензию…";
+  "Черновик до ~50 слов (например: казино, бонусы, вывод; или тема из вашей ниши).";
 
 type RowLayout = "image-left" | "image-right";
 
@@ -33,9 +33,9 @@ const ROWS: {
   {
     id: "bold_daring",
     name: "Aggressive",
-    toneLine: "Дерзкий, быстрый, с характером",
+    toneLine: "Прямо, быстро, с акцентом",
     sample:
-      "Зашёл, глянул, быстро всё понял. Если начинается муть или лишние движения, сразу мимо. Имхо, норм площадки не прячутся и не тянут время.",
+      "Оценка занимает мало времени: интерфейс и условия читаются без лишних шагов. Площадки уровня не скрывают ключевые параметры и не затягивают ответы.",
     layout: "image-left",
     accent: "emerald",
   },
@@ -51,9 +51,9 @@ const ROWS: {
   {
     id: "friendly_warm",
     name: "Friendly",
-    toneLine: "Просто и по-человечески",
+    toneLine: "Спокойно, понятно, без перегруза",
     sample:
-      "Если честно, лучше сначала немного посмотреть и не спешить. Когда всё понятно и спокойно, тогда уже можно нормально зайти и попробовать.",
+      "Имеет смысл сначала изучить интерфейс и условия без спешки. Когда структура ясна, можно переходить к регистрации и тестовому депозиту.",
     layout: "image-left",
     accent: "violet",
   },
@@ -120,7 +120,7 @@ export function BrandVoicesSectionPremium() {
       setResult(text);
     } catch (e) {
       setErr(
-        e instanceof Error ? e.message : "Не удалось связаться с API. Запущен бэкенд?"
+        e instanceof Error ? e.message : "Нет ответа API. Проверьте сеть и доступность бэкенда."
       );
     } finally {
       setLoading(false);
@@ -128,11 +128,10 @@ export function BrandVoicesSectionPremium() {
   }
 
   return (
-    <section className="relative z-10 overflow-hidden px-4 py-20 md:py-28">
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(139,92,246,0.12),transparent_55%),radial-gradient(ellipse_60%_40%_at_100%_50%,rgba(52,211,153,0.06),transparent_50%),radial-gradient(ellipse_50%_35%_at_0%_80%,rgba(59,130,246,0.07),transparent_45%)]"
-        aria-hidden
-      />
+    <section
+      id="demo-brand-voices"
+      className="relative z-10 scroll-mt-24 overflow-hidden border-t border-white/[0.04] px-4 py-20 md:py-28"
+    >
       <div className="relative mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -148,7 +147,7 @@ export function BrandVoicesSectionPremium() {
             Три стиля подачи
           </GradientHeading>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-zinc-400 md:text-lg">
-            Один продукт, разный характер текста. Выбери линию и попробуй на своём черновике.
+            Три стиля подачи в одном продукте. Выберите линию и проверьте на своём черновике.
           </p>
         </motion.div>
 
@@ -316,7 +315,7 @@ export function BrandVoicesSectionPremium() {
                 </span>
               </p>
               <p className="mt-2 text-sm text-zinc-500 md:text-base">
-                Вставь текст — модель сохранит смысл и переложит в выбранный голос.
+                Текст сохраняет смысл; стиль приводится к выбранному голосу.
               </p>
               <textarea
                 className="mt-5 min-h-[160px] w-full resize-y rounded-2xl border border-white/10 bg-black/50 px-5 py-4 text-base leading-relaxed text-zinc-200 outline-none ring-emerald-500/30 placeholder:text-zinc-600 focus:ring-2"
@@ -327,7 +326,7 @@ export function BrandVoicesSectionPremium() {
               {err && <p className="mt-2 text-xs text-red-400">{err}</p>}
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button type="button" onClick={applyStyle} disabled={loading}>
-                  {loading ? "Переписываю…" : "Применить стиль"}
+                  {loading ? "Обработка…" : "Применить стиль"}
                 </Button>
                 <Button type="button" variant="ghost" onClick={close}>
                   Отмена

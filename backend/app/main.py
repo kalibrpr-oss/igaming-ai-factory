@@ -54,12 +54,27 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# JWT уходит в заголовке Authorization, не в cookie — credentials для CORS не нужны.
-# Иначе allow_origins=["*"] + allow_credentials=True недопустима спецификацией: браузер
-# режет ответ (типичная картина: фронт в Docker 172.x → API на 127.0.0.1).
+# JWT в Authorization — credentials для CORS не нужны.
+# Явный список + regex: фронт с http://172.18.x:3333 (Docker) иначе даёт «нет заголовка CORS»
+# при ответах, хотя allow_origins=["*"] в части окружений ведёт себя нестабильно с cross-origin.
+_cors_extra = [
+    o.strip()
+    for o in settings.cors_public_origins.split(",")
+    if o.strip()
+]
+# Частные сети RFC1918 + localhost (порт любой) — покрывает Next на 172.18.0.1:3333.
+_cors_local_regex = (
+    r"^https?://("
+    r"localhost|127\.0\.0\.1|"
+    r"10\.\d{1,3}\.\d{1,3}\.\d{1,3}|"
+    r"172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}|"
+    r"192\.168\.\d{1,3}\.\d{1,3}"
+    r")(:\d+)?$"
+)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_extra,
+    allow_origin_regex=_cors_local_regex,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

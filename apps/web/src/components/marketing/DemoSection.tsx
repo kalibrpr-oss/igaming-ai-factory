@@ -21,9 +21,9 @@ const VOICES: {
   {
     id: "bold_daring",
     name: "Aggressive",
-    toneLine: "Дерзкий, быстрый, с характером",
+    toneLine: "Прямо, быстро, с акцентом",
     sample:
-      "Зашёл, глянул, быстро всё понял. Если начинается муть или лишние движения, сразу мимо. Имхо, норм площадки не прячутся и не тянут время.",
+      "Оценка занимает мало времени: интерфейс и условия читаются без лишних шагов. Площадки уровня не скрывают ключевые параметры и не затягивают ответы.",
   },
   {
     id: "expert_precise",
@@ -35,14 +35,14 @@ const VOICES: {
   {
     id: "friendly_warm",
     name: "Friendly",
-    toneLine: "Просто и по-человечески",
+    toneLine: "Спокойно, понятно, без перегруза",
     sample:
-      "Если честно, лучше сначала немного посмотреть и не спешить. Когда всё понятно и спокойно, тогда уже можно нормально зайти и попробовать.",
+      "Имеет смысл сначала изучить интерфейс и условия без спешки. Когда структура ясна, можно переходить к регистрации и тестовому депозиту.",
   },
 ];
 
 const PLACEHOLDER =
-  "Вставь сюда свой черновик (примерно до 50 слов): про казино, бонусы, вывод, лицензию…";
+  "Черновик до ~50 слов (например: казино, бонусы, вывод; или тема из вашей ниши).";
 
 export function DemoSection() {
   const modalId = useId();
@@ -82,7 +82,7 @@ export function DemoSection() {
       setResult(text);
     } catch (e) {
       setErr(
-        e instanceof Error ? e.message : "Не удалось связаться с API. Запущен бэкенд?"
+        e instanceof Error ? e.message : "Нет ответа API. Проверьте сеть и доступность бэкенда."
       );
     } finally {
       setLoading(false);
@@ -103,14 +103,13 @@ export function DemoSection() {
             Hero · Стиль текста
           </p>
           <GradientHeading as="h2" className="text-4xl sm:text-5xl md:text-6xl">
-            Выбери стиль подачи
+            Стиль подачи
           </GradientHeading>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-zinc-400 md:text-lg">
-            Три блока — <span className="text-zinc-300">Aggressive</span>,{" "}
+            Три пресета: <span className="text-zinc-300">Aggressive</span>,{" "}
             <span className="text-zinc-300">Expert</span>,{" "}
-            <span className="text-zinc-300">Friendly</span>. Вставь черновик и нажми
-            «Применить стиль» — модель переложит текст в выбранный голос (нужен бэкенд и
-            ключ Anthropic).
+            <span className="text-zinc-300">Friendly</span>. Черновик в поле, затем
+            «Применить стиль» — перенос в выбранный голос (бэкенд и ключ API).
           </p>
         </motion.div>
 
@@ -214,7 +213,7 @@ export function DemoSection() {
                 </span>
               </p>
               <p className="mt-2 text-sm text-zinc-500 md:text-base">
-                Вставь текст — модель сохранит смысл и переложит в выбранный голос.
+                Текст сохраняет смысл; стиль приводится к выбранному голосу.
               </p>
               <textarea
                 className="mt-5 min-h-[160px] w-full resize-y rounded-2xl border border-white/10 bg-black/50 px-5 py-4 text-base leading-relaxed text-zinc-200 outline-none ring-emerald-500/30 placeholder:text-zinc-600 focus:ring-2"
@@ -227,7 +226,7 @@ export function DemoSection() {
               )}
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button type="button" onClick={applyStyle} disabled={loading}>
-                  {loading ? "Переписываю…" : "Применить стиль"}
+                  {loading ? "Обработка…" : "Применить стиль"}
                 </Button>
                 <Button type="button" variant="ghost" onClick={close}>
                   Отмена

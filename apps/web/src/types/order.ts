@@ -1,5 +1,7 @@
 /** Синхрон с backend/app/schemas/order.py и seo.py */
 
+export type OrderKind = "generate" | "uniquify";
+
 export interface BrandVoiceMeta {
   id: string;
   label: string;
@@ -31,6 +33,7 @@ export interface SeoOrderConfig {
 }
 
 export interface OrderCreatePayload {
+  order_kind?: OrderKind;
   brand_name: string;
   task_notes?: string | null;
   keywords: string[];
@@ -38,15 +41,20 @@ export interface OrderCreatePayload {
   target_word_count: number;
   brand_voice_id: BrandVoiceId | string;
   seo: SeoOrderConfig;
+  source_text?: string | null;
 }
 
 export interface OrderQuotePreviewPayload {
+  order_kind?: OrderKind;
   target_word_count: number;
   brand_voice_id: BrandVoiceId | string;
+  source_text?: string | null;
 }
 
 export interface OrderQuoteResponse {
+  order_kind?: OrderKind;
   target_word_count: number;
+  billing_word_count?: number | null;
   price_base_cents: number;
   discount_cents: number;
   price_cents: number;
@@ -68,8 +76,10 @@ export type OrderStatus =
 export interface OrderDto {
   id: number;
   status: OrderStatus;
+  order_kind?: OrderKind;
   brand_name: string;
   task_notes: string | null;
+  source_text?: string | null;
   keywords: string[];
   lsi_keywords: string[];
   seo_config: Record<string, unknown>;

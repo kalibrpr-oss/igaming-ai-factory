@@ -8,9 +8,9 @@ export function EconomyPublicSection() {
       title: "Credits и баланс",
       body: (
         <>
-          Баланс в кабинете — это внутренние{" "}
+          Баланс в кабинете — внутренние{" "}
           <span className="text-zinc-200">Credits</span> для оплаты генераций.
-          Пополняешь через подключённого провайдера; списание — только на заказы.
+          Пополнение — через подключённого провайдера; списание только по заказам.
           Вывода «наличными» нет: валюта сервиса, не электронный кошелёк для
           переводов третьим лицам.
         </>
@@ -31,10 +31,10 @@ export function EconomyPublicSection() {
       title: "Реферальная программа",
       body: (
         <>
-          Делишься ссылкой из кабинета. Если человек зарегистрировался по твоей
-          ссылке и пополнил баланс, с{" "}
-          <span className="text-zinc-200">первого успешного пополнения</span> ты
-          получаешь <span className="text-zinc-200">50%</span> от этой суммы
+          Персональная ссылка в кабинете. Если приглашённый зарегистрировался по ней и
+          пополнил баланс, с{" "}
+          <span className="text-zinc-200">первого успешного пополнения</span> рефереру
+          начисляется <span className="text-zinc-200">50%</span> от этой суммы
           (один раз с этого реферала), с каждого следующего его пополнения —{" "}
           <span className="text-zinc-200">15%</span>. Начисления после
           подтверждения платежа, без ручных заявок.
@@ -45,7 +45,7 @@ export function EconomyPublicSection() {
 
   return (
     <section
-      className="border-t border-white/[0.06] bg-pitch-soft/20 px-4 py-20 backdrop-blur-sm md:py-24"
+      className="border-t border-white/[0.06] px-4 py-20 md:py-24"
       aria-labelledby="economy-public-heading"
     >
       <div className="mx-auto max-w-6xl">
@@ -56,8 +56,7 @@ export function EconomyPublicSection() {
           Деньги и бонусы — прозрачно
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-base leading-relaxed text-zinc-500 md:text-lg">
-          То же, что видишь в продукте: цифры в кабинете и на странице заказа не
-          спорят с этим блоком.
+          Сводка совпадает с интерфейсом: кабинет и форма заказа.
         </p>
         <div className="mt-12 grid gap-6 md:grid-cols-3 md:gap-8">
           {blocks.map((b) => (
@@ -75,11 +74,10 @@ export function EconomyPublicSection() {
           ))}
         </div>
         <p className="mx-auto mt-12 max-w-3xl text-center text-sm leading-relaxed text-zinc-600 md:text-base">
-          Позиционирование —{" "}
-          <span className="text-zinc-500">iGaming, беттинг, PBN</span> и смежные
-          темы. Форму заказа можно использовать и в других нишах: бренд, ключи и
-          SEO-параметры задаёшь ты, ответственность за публикацию и compliance —
-          на стороне клиента.
+          Опорные сценарии —{" "}
+          <span className="text-zinc-500">iGaming, беттинг, PBN</span>. Генерация
+          доступна для любой тематики при корректном ТЗ; ответственность за публикацию и
+          compliance — на стороне клиента.
         </p>
       </div>
     </section>

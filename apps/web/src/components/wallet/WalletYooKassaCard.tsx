@@ -28,7 +28,7 @@ export function WalletYooKassaCard() {
     setErr(null);
     const n = Number(rub.replace(",", "."));
     if (!Number.isFinite(n) || n <= 0) {
-      setErr("Введи сумму в рублях");
+      setErr("Укажите сумму в рублях");
       return;
     }
     const cents = Math.round(n * 100);
@@ -56,7 +56,7 @@ export function WalletYooKassaCard() {
         Пополнение картой (ЮKassa)
       </p>
       <p className="mt-1 text-sm text-zinc-500">
-        Откроется страница оплаты ЮKassa, после успеха вернёшься в кабинет.
+        Откроется страница оплаты ЮKassa; после успешной оплаты — возврат в кабинет.
       </p>
       <div className="mt-4 flex flex-wrap items-end gap-3">
         <label className="text-base text-zinc-400">

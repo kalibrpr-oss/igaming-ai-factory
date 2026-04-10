@@ -82,7 +82,8 @@ class Settings(BaseSettings):
     )
     redis_url: str = "redis://127.0.0.1:6379/0"
     anthropic_api_key: str = ""
-    anthropic_model: str = "claude-3-5-sonnet-20241022"
+    # ID модели — из консоли / документации Anthropic; устаревшие имена дают HTTP 404.
+    anthropic_model: str = "claude-sonnet-4-6"
 
     jwt_secret: str = "dev-change-me"
     jwt_algorithm: str = "HS256"
@@ -125,6 +126,14 @@ class Settings(BaseSettings):
     public_app_url: str = Field(
         default="http://127.0.0.1:3000",
         description="Базовый URL фронта (return_url после оплаты ЮKassa, без слэша в конце).",
+    )
+
+    cors_public_origins: str = Field(
+        default="",
+        description=(
+            "Дополнительные Origin для CORS, через запятую (прод-фронт, превью). "
+            "Локальные localhost / 127.0.0.1 / частные IPv4 (172.x Docker и т.д.) разрешаются regex в main."
+        ),
     )
 
     yookassa_shop_id: str = Field(

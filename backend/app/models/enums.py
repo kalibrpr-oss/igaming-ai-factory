@@ -23,6 +23,13 @@ class BalanceReferenceType(str, enum.Enum):
     manual = "manual"
 
 
+class OrderKind(str, enum.Enum):
+    """Режим заказа: генерация с нуля или уникализация готового текста."""
+
+    generate = "generate"
+    uniquify = "uniquify"
+
+
 class OrderStatus(str, enum.Enum):
     draft = "draft"
     pending_payment = "pending_payment"

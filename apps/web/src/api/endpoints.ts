@@ -198,6 +198,10 @@ export async function fetchOrders(): Promise<OrderDto[]> {
   return apiGet<OrderDto[]>(`${V}/orders`);
 }
 
+export async function fetchOrder(orderId: number): Promise<OrderDto> {
+  return apiGet<OrderDto>(`${V}/orders/${orderId}`);
+}
+
 export async function payOrderFromBalance(
   orderId: number
 ): Promise<OrderPayResponse> {

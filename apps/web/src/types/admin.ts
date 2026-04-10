@@ -1,3 +1,5 @@
+import type { OrderKind } from "./order";
+
 export type AdminUserRow = {
   id: number;
   email: string;
@@ -74,6 +76,7 @@ export type AdminGrantCreditsResponse = {
 export type AdminReviewOrderRow = {
   id: number;
   user_id: number;
+  order_kind?: OrderKind;
   brand_name: string;
   target_word_count: number;
   price_cents: number;

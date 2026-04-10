@@ -3,6 +3,7 @@ export type {
   BrandVoiceId,
   BrandVoiceMeta,
   HeadingFormat,
+  OrderKind,
   OrderCreatePayload,
   OrderDto,
   OrderGenerateResponse,

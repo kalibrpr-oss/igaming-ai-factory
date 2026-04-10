@@ -11,7 +11,12 @@ import {
 import { Button } from "@/components/ui/Button";
 import { buildOrderPayload, type SeoForm } from "@/lib/order-schema";
 import { cn } from "@/lib/cn";
-import type { BrandVoiceMeta, OrderDto, OrderQuoteResponse } from "@/types";
+import type {
+  BrandVoiceMeta,
+  OrderDto,
+  OrderKind,
+  OrderQuoteResponse,
+} from "@/types";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
@@ -33,6 +38,12 @@ const statusAfterCreateRu: Record<OrderDto["status"], string> = {
   cancelled: "Отменён",
 };
 
+/** Целое число слов 300–15000; пустой ввод number даёт NaN → в JSON уходит null и API отвечает 422. */
+function clampWordCount(raw: number): number {
+  if (!Number.isFinite(raw)) return 1500;
+  return Math.min(15000, Math.max(300, Math.round(raw)));
+}
+
 const defaultSeo: SeoForm = {
   language: "ru",
   primary_keyword: "",
@@ -47,6 +58,8 @@ const defaultSeo: SeoForm = {
 
 export function OrderForm() {
   const [voices, setVoices] = useState<BrandVoiceMeta[]>([]);
+  const [orderKind, setOrderKind] = useState<OrderKind>("generate");
+  const [sourceText, setSourceText] = useState("");
   const [brandName, setBrandName] = useState("");
   const [taskNotes, setTaskNotes] = useState("");
   const [keywordsRaw, setKeywordsRaw] = useState("");
@@ -89,16 +102,32 @@ export function OrderForm() {
 
   const refreshQuote = useCallback(async () => {
     try {
-      const q = await previewOrderPrice({
-        target_word_count: words,
-        brand_voice_id: voiceId,
-      });
-      setQuote(q);
+      if (orderKind === "uniquify") {
+        const wc = sourceText.trim().split(/\s+/).filter(Boolean).length;
+        if (wc < 80) {
+          setQuote(null);
+          return;
+        }
+        const q = await previewOrderPrice({
+          order_kind: "uniquify",
+          target_word_count: clampWordCount(words),
+          brand_voice_id: voiceId,
+          source_text: sourceText,
+        });
+        setQuote(q);
+      } else {
+        const q = await previewOrderPrice({
+          order_kind: "generate",
+          target_word_count: clampWordCount(words),
+          brand_voice_id: voiceId,
+        });
+        setQuote(q);
+      }
       setErr(null);
     } catch {
       setQuote(null);
     }
-  }, [words, voiceId]);
+  }, [words, voiceId, orderKind, sourceText]);
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -112,11 +141,13 @@ export function OrderForm() {
     setMsg(null);
     setErr(null);
     const built = buildOrderPayload({
+      order_kind: orderKind,
+      source_text: sourceText,
       brand_name: brandName,
       task_notes: taskNotes,
       keywords_raw: keywordsRaw,
       lsi_raw: lsiRaw,
-      target_word_count: words,
+      target_word_count: clampWordCount(words),
       brand_voice_id: voiceId,
       seo,
     });
@@ -183,6 +214,52 @@ export function OrderForm() {
   return (
     <form onSubmit={onSubmit} className="mx-auto max-w-3xl space-y-10 pb-20">
       <div className="glass-panel p-8 sm:p-10">
+        <h2 className="text-2xl font-semibold text-white">Тип заказа</h2>
+        <p className="mt-2 text-sm text-zinc-500 md:text-base">
+          Уникализация — переписываем твой материал под голос и SEO; цена ниже полной генерации, счёт
+          идёт по объёму исходника (минимум 300 слов в базе, как у генерации).
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setOrderKind("generate")}
+            className={cn(
+              "rounded-xl border px-5 py-3 text-sm font-medium transition-all duration-[250ms] ease-smooth",
+              orderKind === "generate"
+                ? "border-gem-bright/70 bg-emerald-500/15 text-gem-mist"
+                : "border-white/10 bg-white/[0.03] text-zinc-400 hover:border-gem-bright/25"
+            )}
+          >
+            Генерация с нуля
+          </button>
+          <button
+            type="button"
+            onClick={() => setOrderKind("uniquify")}
+            className={cn(
+              "rounded-xl border px-5 py-3 text-sm font-medium transition-all duration-[250ms] ease-smooth",
+              orderKind === "uniquify"
+                ? "border-gem-bright/70 bg-emerald-500/15 text-gem-mist"
+                : "border-white/10 bg-white/[0.03] text-zinc-400 hover:border-gem-bright/25"
+            )}
+          >
+            Уникализация текста
+          </button>
+        </div>
+        {orderKind === "uniquify" && (
+          <label className="mt-8 block text-base text-zinc-400">
+            Исходный текст (минимум 80 слов)
+            <textarea
+              className="mt-2 min-h-[220px] w-full rounded-xl border border-white/10 bg-ink-900/80 px-4 py-3 text-base text-white outline-none ring-emerald-500/40 transition-[box-shadow] duration-[250ms] focus:ring-2"
+              value={sourceText}
+              onChange={(e) => setSourceText(e.target.value)}
+              placeholder="Вставь статью целиком — перепишем формулировки, факты и цифры сохраним."
+              required={orderKind === "uniquify"}
+            />
+          </label>
+        )}
+      </div>
+
+      <div className="glass-panel p-8 sm:p-10">
         <h2 className="text-2xl font-semibold text-white">ТЗ и бренд</h2>
         <div className="mt-6 space-y-5">
           <label className="block text-base text-zinc-400">
@@ -237,14 +314,16 @@ export function OrderForm() {
         <h2 className="text-2xl font-semibold text-white">Объём и голос</h2>
         <div className="mt-6 grid gap-8 sm:grid-cols-2">
           <label className="block text-base text-zinc-400">
-            Целевой объём, слов
+            {orderKind === "uniquify"
+              ? "Целевой объём результата, слов"
+              : "Целевой объём, слов"}
             <input
               type="number"
               min={300}
               max={15000}
               className="mt-2 w-full rounded-xl border border-white/10 bg-ink-900/80 px-4 py-3 text-base text-white outline-none ring-emerald-500/40 focus:ring-2"
-              value={words}
-              onChange={(e) => setWords(Number(e.target.value))}
+              value={Number.isFinite(words) ? words : 1500}
+              onChange={(e) => setWords(clampWordCount(Number(e.target.value)))}
             />
           </label>
           <div>
@@ -269,8 +348,21 @@ export function OrderForm() {
             </div>
           </div>
         </div>
+        {orderKind === "uniquify" &&
+          sourceText.trim().split(/\s+/).filter(Boolean).length < 80 && (
+            <p className="mt-6 text-sm text-zinc-500">
+              Для оценки цены уникализации нужно не меньше 80 слов в исходнике.
+            </p>
+          )}
         {quote && (
           <div className="mt-8 space-y-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4 text-base text-emerald-200/90">
+            {quote.order_kind === "uniquify" &&
+              quote.billing_word_count != null && (
+                <p className="text-sm text-emerald-100/80">
+                  База тарифа: {quote.billing_word_count} слов исходника (коэфф. уникализации) · цель
+                  по результату: {quote.target_word_count} слов
+                </p>
+              )}
             {quote.discount_cents > 0 ? (
               <>
                 <p className="text-sm text-emerald-100/80">
@@ -283,15 +375,28 @@ export function OrderForm() {
                 </p>
                 <p>
                   К оплате:{" "}
-                  <strong>{formatRub(quote.price_cents)} ₽</strong> за{" "}
-                  {quote.target_word_count} слов ({quote.currency})
+                  <strong>{formatRub(quote.price_cents)} ₽</strong>
+                  {quote.order_kind === "uniquify" ? (
+                    <> ({quote.currency})</>
+                  ) : (
+                    <>
+                      {" "}
+                      за {quote.target_word_count} слов ({quote.currency})
+                    </>
+                  )}
                 </p>
               </>
             ) : (
               <p>
-                Ориентир цены:{" "}
-                <strong>{formatRub(quote.price_cents)} ₽</strong> за{" "}
-                {quote.target_word_count} слов ({quote.currency})
+                Ориентир цены: <strong>{formatRub(quote.price_cents)} ₽</strong>
+                {quote.order_kind === "uniquify" ? (
+                  <> ({quote.currency})</>
+                ) : (
+                  <>
+                    {" "}
+                    за {quote.target_word_count} слов ({quote.currency})
+                  </>
+                )}
               </p>
             )}
           </div>
@@ -482,7 +587,7 @@ export function OrderForm() {
               {payLoading ? "Списываем…" : "Оплатить с баланса"}
             </Button>
           )}
-          {activeOrder.status === "paid" && (
+          {(activeOrder.status === "paid" || activeOrder.status === "failed") && (
             <div className="space-y-3">
               <p className="text-sm text-zinc-500">
                 Генерация может занять несколько минут — не закрывай вкладку.
@@ -493,7 +598,11 @@ export function OrderForm() {
                 disabled={genLoading}
                 onClick={() => void onGenerate()}
               >
-                {genLoading ? "Генерируем…" : "Запустить генерацию"}
+                {genLoading
+                  ? "Генерируем…"
+                  : activeOrder.status === "failed"
+                    ? "Повторить генерацию"
+                    : "Запустить генерацию"}
               </Button>
             </div>
           )}
@@ -508,7 +617,8 @@ export function OrderForm() {
           )}
           {activeOrder.status === "failed" && (
             <p className="text-base text-red-300/90">
-              Генерация не удалась. Попробуйте снова позже или обратитесь в поддержку.
+              Генерация не удалась. Используйте «Повторить генерацию» выше или обратитесь в
+              поддержку.
             </p>
           )}
         </div>

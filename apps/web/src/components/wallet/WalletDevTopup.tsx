@@ -25,7 +25,7 @@ export function WalletDevTopup({ balanceCents, onSuccess }: Props) {
     setErr(null);
     const n = Number(rub.replace(",", "."));
     if (!Number.isFinite(n) || n <= 0) {
-      setErr("Введи сумму в рублях");
+      setErr("Укажите сумму в рублях");
       return;
     }
     const cents = Math.round(n * 100);

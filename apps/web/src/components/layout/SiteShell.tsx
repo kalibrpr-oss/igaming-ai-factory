@@ -5,7 +5,7 @@ import { Suspense } from "react";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col bg-[#05020D]">
       <Suspense fallback={null}>
         <ReferralCapture />
       </Suspense>

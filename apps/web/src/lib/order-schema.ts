@@ -1,5 +1,11 @@
-import type { OrderCreatePayload, SeoOrderConfig } from "@/types";
+import type { OrderCreatePayload, OrderKind, SeoOrderConfig } from "@/types";
 import { z } from "zod";
+
+const UNIQUIFY_MIN_WORDS = 80;
+
+function countWords(raw: string): number {
+  return raw.trim().split(/\s+/).filter(Boolean).length;
+}
 
 export const seoFormSchema = z.object({
   language: z.string().min(2).max(8),
@@ -24,6 +30,8 @@ function splitKeys(raw: string, max: number): string[] {
 }
 
 export function buildOrderPayload(input: {
+  order_kind: OrderKind;
+  source_text: string;
   brand_name: string;
   task_notes: string;
   keywords_raw: string;
@@ -32,6 +40,18 @@ export function buildOrderPayload(input: {
   brand_voice_id: string;
   seo: SeoForm;
 }): { ok: true; payload: OrderCreatePayload } | { ok: false; error: string } {
+  if (input.order_kind === "uniquify") {
+    const st = input.source_text.trim();
+    if (!st) {
+      return { ok: false, error: "Вставь исходный текст для уникализации." };
+    }
+    if (countWords(st) < UNIQUIFY_MIN_WORDS) {
+      return {
+        ok: false,
+        error: `Минимум ${UNIQUIFY_MIN_WORDS} слов в исходнике (сейчас ${countWords(st)}).`,
+      };
+    }
+  }
   const keywords = splitKeys(input.keywords_raw, 50);
   if (keywords.length === 0) {
     return { ok: false, error: "Добавь хотя бы один ключ в поле «Ключи»." };
@@ -51,6 +71,7 @@ export function buildOrderPayload(input: {
   return {
     ok: true,
     payload: {
+      order_kind: input.order_kind,
       brand_name: input.brand_name.trim(),
       task_notes: input.task_notes.trim() || null,
       keywords,
@@ -58,6 +79,8 @@ export function buildOrderPayload(input: {
       target_word_count: input.target_word_count,
       brand_voice_id: input.brand_voice_id,
       seo,
+      source_text:
+        input.order_kind === "uniquify" ? input.source_text.trim() : null,
     },
   };
 }

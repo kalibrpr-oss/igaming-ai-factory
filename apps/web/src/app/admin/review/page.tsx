@@ -121,6 +121,7 @@ export default function AdminReviewQueuePage() {
                       user #{o.user_id}
                     </Link>
                     {" · "}
+                    {o.order_kind === "uniquify" ? "Уникализация · " : ""}
                     {o.target_word_count.toLocaleString("ru-RU")} слов ·{" "}
                     <span className="tabular-nums text-zinc-300">
                       {(o.price_cents / 100).toLocaleString("ru-RU")} ₽

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.balance_transaction import BalanceTransaction
@@ -68,11 +68,8 @@ async def apply_order_payment(session: AsyncSession, order_id: int) -> Order:
     )
     session.add(debit)
 
-    await session.execute(
-        update(User)
-        .where(User.id == user.id)
-        .values(balance_cents=user.balance_cents - order.price_cents)
-    )
+    # Только ORM: bulk update() не обновляет атрибуты экземпляра и давал рассинхрон с refresh() в API.
+    user.balance_cents = user.balance_cents - order.price_cents
 
     order.status = OrderStatus.paid
     if order.discount_cents > 0 and user.first_order_bonus_consumed_at is None:

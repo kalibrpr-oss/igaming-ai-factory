@@ -22,7 +22,7 @@ export function HomeBottomCta() {
             С возвращением
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-400 md:text-lg">
-            Кабинет, заказы и баланс — в один клик.
+            Кабинет: заказы, баланс, статусы генерации.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Button href="/dashboard" primaryCta>
@@ -41,17 +41,17 @@ export function HomeBottomCta() {
     <section className="px-4 pb-28">
       <div className="liquid-glass mx-auto max-w-4xl p-10 text-center shadow-emerald-glow md:p-12">
         <h2 className="text-3xl font-semibold text-white md:text-4xl">
-          Готов прогнать материал?
+          Первый заказ
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-base text-zinc-400 md:text-lg">
-          Регистрация — пара полей. Потом форма заказа и оплата.
+          Регистрация, подтверждение почты, затем форма заказа и оплата с баланса.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-4">
           <Button href="/register" primaryCta>
             Создать аккаунт
           </Button>
           <Button variant="outline" href="/order">
-            Уже есть логин — к заказу
+            Вход и заказ
           </Button>
         </div>
       </div>

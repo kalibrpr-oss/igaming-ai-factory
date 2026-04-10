@@ -1,10 +1,12 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SeoOrderConfigSchema(BaseModel):
     """Поля из Docs/seo-order-spec.md — валидация до сохранения в JSONB."""
+
+    model_config = ConfigDict(extra="ignore")
 
     language: str = Field(default="ru", min_length=2, max_length=8)
     primary_keyword: str = Field(min_length=1, max_length=256)

@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 
 from app.models.enums import (
+    OrderKind,
     OrderStatus,
     PaymentKind,
     PaymentProvider,
@@ -96,6 +97,7 @@ class AdminPaymentRow(BaseModel):
 class AdminReviewOrderRow(BaseModel):
     id: int
     user_id: int
+    order_kind: OrderKind = OrderKind.generate
     brand_name: str
     target_word_count: int
     price_cents: int

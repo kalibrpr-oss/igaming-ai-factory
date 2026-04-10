@@ -1,0 +1,50 @@
+---
+description: При любой просьбе запустить бэкенд/фронт/тесты — сразу готовые команды PowerShell для этого репозитория.
+globs: "**/*"
+alwaysApply: true
+---
+
+# Локальный запуск: всегда с командами
+
+Если в ответе фигурирует «подними бэкенд», «запусти фронт», «прогони тесты», «проверь LLM» и т.п. — **в том же сообщении** обязательно дать **копируемые команды**, без отсылки «как в доке» без строк.
+
+Корень репозитория: папка `iGaming Project` (или текущий workspace). Дальше — **относительные пути** от корня.
+
+## Бэкенд (FastAPI, порт 8000)
+
+```powershell
+cd backend
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+## Фронт (Next.js, порт 3333, слушает все интерфейсы `0.0.0.0`)
+
+```powershell
+cd apps/web
+npm run dev
+```
+
+Два процесса — **два терминала**. Заходить можно и с `http://localhost:3333`, и с LAN/Docker IP — стили не должны отваливаться (см. `next.config.ts`: static export только на `next build`).
+
+## Проверка Claude без UI
+
+```powershell
+cd backend
+python scripts\test_llm_ping.py
+```
+
+## Pytest (backend)
+
+```powershell
+cd backend
+pytest tests\
+```
+
+## Alembic (из `backend`)
+
+```powershell
+cd backend
+alembic upgrade head
+```
+
+При необходимости уточни: ОС Windows, PowerShell; при другом shell — те же команды без изменения сути.

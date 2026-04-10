@@ -41,7 +41,7 @@ export function ReferralProgramCard() {
     try {
       await navigator.clipboard.writeText(fullLink);
     } catch {
-      setErr("Не удалось скопировать — скопируй вручную.");
+      setErr("Не удалось скопировать — выполните копирование вручную.");
     }
   }
 
@@ -78,8 +78,8 @@ export function ReferralProgramCard() {
     <div className="mt-6 rounded-2xl border border-violet-500/25 bg-violet-500/[0.07] px-5 py-5">
       <p className="text-sm font-medium text-violet-200/95">Реферальная программа</p>
       <p className="mt-1 text-sm text-zinc-500">
-        Первое пополнение приглашённого — тебе <span className="text-zinc-300">50%</span>{" "}
-        от суммы (один раз с каждого). Дальше —{" "}
+        С первого пополнения приглашённого начисляется{" "}
+        <span className="text-zinc-300">50%</span> от суммы (один раз с каждого). Далее —{" "}
         <span className="text-zinc-300">15%</span> с каждого пополнения.
       </p>
       <p className="mt-3 break-all font-mono text-sm text-zinc-200">{fullLink}</p>
@@ -102,8 +102,7 @@ export function ReferralProgramCard() {
       {!data.slug_locked && (
         <div className="mt-4 border-t border-white/10 pt-4">
           <p className="text-sm text-zinc-500">
-            Один раз можно задать красивый код в ссылке (латиница, цифры, дефис, 4–32
-            символа).
+            Один раз задаётся код в ссылке (латиница, цифры, дефис; 4–32 символа).
           </p>
           <div className="mt-2 flex flex-wrap items-end gap-2">
             <label className="text-base text-zinc-400">
@@ -128,7 +127,7 @@ export function ReferralProgramCard() {
       )}
       {data.slug_locked && (
         <p className="mt-3 text-xs text-zinc-600">
-          Код в ссылке зафиксирован. Твой код:{" "}
+          Код в ссылке зафиксирован. Текущий код:{" "}
           <span className="font-mono text-zinc-400">{data.referral_code}</span>
         </p>
       )}

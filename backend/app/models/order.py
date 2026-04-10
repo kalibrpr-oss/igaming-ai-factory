@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-from app.models.enums import OrderStatus
+from app.models.enums import OrderKind, OrderStatus
 
 if TYPE_CHECKING:
     from app.models.payment import Payment
@@ -22,8 +22,20 @@ class Order(Base):
         Enum(OrderStatus, name="order_status"), default=OrderStatus.pending_payment
     )
 
+    order_kind: Mapped[OrderKind] = mapped_column(
+        Enum(
+            OrderKind,
+            name="order_kind_enum",
+            native_enum=False,
+            length=16,
+            values_callable=lambda _: [e.value for e in OrderKind],
+        ),
+        default=OrderKind.generate,
+        server_default="generate",
+    )
     brand_name: Mapped[str] = mapped_column(String(256))
     task_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     keywords: Mapped[list[Any]] = mapped_column(
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )

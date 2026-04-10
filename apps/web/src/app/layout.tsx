@@ -20,7 +20,7 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "iGaming AI-Factory",
   description:
-    "Высокотехнологичность · Premium · Совершенность — автоматический конвейер SEO-контента для гемблинга",
+    "iGaming AI-Factory: конвейер SEO-текста. Опорная ниша iGaming; заказ задаётся под любую тематику в форме.",
 };
 
 export default function RootLayout({
